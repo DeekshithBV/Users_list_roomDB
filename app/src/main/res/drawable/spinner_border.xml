@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="1dp"
+                android:color="@color/grey" /> <!-- Border color and width -->
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Dropdown Icon -->
+    <!--<item android:right="8dp" android:top="8dp" android:bottom="8dp">
+        <bitmap
+            android:gravity="end|center_vertical"
+            android:src="@android:drawable/arrow_down_float" />
+    </item>-->
+</layer-list>

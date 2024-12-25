@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="SpinnerPopupStyle" parent="Theme.AppCompat.Light">
+        <item name="android:popupBackground">@android:color/black</item>
+        <item name="android:dropDownVerticalOffset">10dp</item>
+    </style>
+</resources>
