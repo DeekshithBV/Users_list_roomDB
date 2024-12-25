@@ -34,4 +34,6 @@ public class UserRepository {
     public void update(User user) {
         executorService.execute(() -> userDao.updateUser(user));
     }
+
+    //kakan kunte kanaki
 }
