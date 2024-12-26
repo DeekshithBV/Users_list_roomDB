@@ -14,7 +14,9 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -60,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         recyclerView = mBinding.recyclerView;
-        userAdapter = new UserAdapter(this, mBinding);
+        initAddUserDetailsDialog();
+        userAdapter = new UserAdapter(this, mBinding, addUserDetailsDialog);
         recyclerView.setAdapter(userAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         userViewModel.getAllUsers().observe(this, userAdapter::setUsers);
@@ -77,24 +80,12 @@ public class MainActivity extends AppCompatActivity {
             if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
                 return;
             }
-
-            deleteOldDialog = new AlertDialog.Builder(this)
-                    .setTitle("Delete User")
-                    .setMessage("Are you sure you want to delete user " + user.getName() + "?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        userViewModel.delete(user);
-                        dialog.dismiss();
-                    })
-                    .setNegativeButton("No", (dialog, which) -> {
-                        dialog.dismiss();
-                        Log.d("new dialog on NO click", "onCreate: "+deleteOldDialog.hashCode());
-                    })
-                    .create();
+            initializeDeleteDialog(user);
             deleteOldDialog.show();
             Log.d("new dialog", "onCreate: "+deleteOldDialog.hashCode());
         });
 
-        mBinding.addIcon.setOnClickListener(v -> showUserDetailsDialog(null, null));
+        mBinding.addIcon.setOnClickListener(v -> showUserDetailsDialog(null, null, null));
 
         //Below code is for selection of users and checkbox.
         mBinding.checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -129,7 +120,22 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog) {
+    private void initializeDeleteDialog(@NonNull User user) {
+        deleteOldDialog = new AlertDialog.Builder(this)
+                .setTitle("Delete User")
+                .setMessage("Are you sure you want to delete user " + user.getName() + "?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    userViewModel.delete(user);
+                    dialog.dismiss();
+                })
+                .setNegativeButton("No", (dialog, which) -> {
+                    dialog.dismiss();
+                    Log.d("new dialog on NO click", "onCreate: "+deleteOldDialog.hashCode());
+                })
+                .create();
+    }
+
+    private void initAddUserDetailsDialog() {
         //If the xml is not enclosed inside <layout> then it will throw error for below line.
 
         //And also initialized this dialog inside onCreate() method but got crashed during 2nd time click of edit icon
@@ -152,7 +158,9 @@ public class MainActivity extends AppCompatActivity {
                 R.array.gender_array, R.layout.single_textview);
         adapter.setDropDownViewResource(R.layout.single_textview);
         dialogAddUserBinding.spinnerGender.setAdapter(adapter);
+    }
 
+    public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog, ImageView editIcon) {
         //Populate existing user data if edit operation
         if (editUser != null) {
             dialogAddUserBinding.editTextUserName.setText(editUser.getName());
@@ -209,8 +217,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (!userName.matches("^[a-zA-Z0-9 ]+$")) {
                 dialogAddUserBinding.editTextUserName.setError("User name should contain only letters, numbers and spaces!");
                 return;
-            } else if (userName.length() > 15) {
-                dialogAddUserBinding.editTextUserName.setError("User name should be less than or equal to 15 characters!");
+            } else if (userName.length() > 14) {
+                dialogAddUserBinding.editTextUserName.setError("User name should be less than or equal to 14 characters!");
                 return;
             }
 
@@ -248,10 +256,16 @@ public class MainActivity extends AppCompatActivity {
         if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
             return;
         }
+        if (userAdapter.getUserProfileDialog() != null && userAdapter.getUserProfileDialog().isShowing()) {
+            return;
+        }
+        if (userAdapter.getUserDetailsDialog() != null && userAdapter.getUserDetailsDialog().isShowing() && editIcon == null) {
+            return;
+        }
         addUserDetailsDialog.show();
     }
 
-    private int getIndexBasedOnGenderSelected(String gender) {
+    private int getIndexBasedOnGenderSelected(@NonNull String gender) {
         if (gender.equalsIgnoreCase("(m)"))
             return 0;
         else if (gender.equalsIgnoreCase("(f)"))
@@ -259,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
         else return 2;
     }
 
+    @androidx.annotation.Nullable
     private String calculateAge(String dob) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
         try {
@@ -281,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @NonNull
     private String getDefaultPhoto(String gender) {
         if ("(M)".equalsIgnoreCase(gender)) {
             return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.male_gender).toString();

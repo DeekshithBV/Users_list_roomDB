@@ -45,9 +45,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private boolean isSelectionMode = false;
     private final List<User> selectedUsers = new ArrayList<>();
 
-    public UserAdapter(Context context, ActivityMainBinding mBinding) {
+    public UserAdapter(Context context, ActivityMainBinding mBinding, AlertDialog addUserDetailsDialog) {
         this.context = context;
         this.activityMainBinding = mBinding;
+        this.addUserDetailsDialog = addUserDetailsDialog;
         userProfileDialog = new Dialog(context);
         userDetailsDialog = new Dialog(context);
         params = new WindowManager.LayoutParams();
@@ -69,10 +70,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = users.get(position);
+        String Age = context.getText(R.string.age) + context.getString(R.string.colon) + user.getAge();
+        String Dob = context.getText(R.string.DOB) + context.getString(R.string.colon) + user.getDob();
         holder.textViewName.setText(user.getName());
         holder.textViewGender.setText(user.getGender());
-        holder.textViewDob.setText("DOB:" + user.getDob());
-        holder.textViewAge.setText("Age:" + user.getAge());
+        holder.textViewDob.setText(Dob);
+        holder.textViewAge.setText(Age);
         if (user.getPhotoUri() != null) {
             holder.photo.setImageURI(Uri.parse(user.getPhotoUri()));
             Glide.with(context)
@@ -158,11 +161,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         userProfileDialog.setContentView(userProfileBinding.getRoot());
         userProfileBinding.setUser(user);
 
-        //Below lines are not working have to look.
-        /*if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
+        if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
             return;
         }
-        if (deleteDialog != null && deleteDialog.isShowing()) {
+
+        //Below lines are not working have to look.
+        /*if (deleteDialog != null && deleteDialog.isShowing()) {
             return;
         }*/
         if (!userProfileDialog.isShowing() && !userDetailsDialog.isShowing()) {
@@ -187,11 +191,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             window.setBackgroundDrawableResource(R.drawable.rounded_corner);
         }
 
-        //Below lines are not working have to look.
-        /*if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
+        if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
             return;
         }
-        if (deleteDialog != null && deleteDialog.isShowing()) {
+
+        //Below lines are not working have to look.
+        /*if (deleteDialog != null && deleteDialog.isShowing()) {
             return;
         }*/
         if (!userDetailsDialog.isShowing() && !userProfileDialog.isShowing()) {
@@ -202,9 +207,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         // of UserDetailsLayoutBinding, which is null in your onBindViewHolder method. So used it here.
         userDetailsLayoutBinding.editUser.setOnClickListener(v -> {
             if (context instanceof MainActivity) {
-                ((MainActivity) context).showUserDetailsDialog(user, userDetailsDialog);
+                ((MainActivity) context).showUserDetailsDialog(user, userDetailsDialog, userDetailsLayoutBinding.editUser);
             }
         });
+    }
+
+    public Dialog getUserProfileDialog() {
+        return userProfileDialog;
+    }
+
+    public Dialog getUserDetailsDialog() {
+        return userDetailsDialog;
     }
 
     //If the count is 0 it won't display in the list at all.

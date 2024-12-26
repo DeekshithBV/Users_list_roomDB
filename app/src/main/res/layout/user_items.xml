@@ -9,6 +9,8 @@
         android:layout_margin="6dp"
         android:paddingVertical="10dp"
         android:paddingHorizontal="3dp"
+        android:elevation="10dp"
+        android:translationZ="10dp"
         android:background="@drawable/item_shape_color">
 
         <ImageView

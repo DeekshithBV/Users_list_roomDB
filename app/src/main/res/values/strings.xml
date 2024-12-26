@@ -4,6 +4,8 @@
     <string name="hint">Enter user name</string>
     <string name="name">Name</string>
     <string name="age">Age</string>
+    <string name="DOB">DOB</string>
+    <string name="colon">:</string>
     <string name="dob">Date of birth</string>
     <string name="gender">Gender</string>
     <string name="Add">Add</string>
