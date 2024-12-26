@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding mBinding;
     public DialogAddUserBinding dialogAddUserBinding;
     private UserViewModel userViewModel;
+    private AlertDialog addUserDetailsDialog, deleteOldDialog;
     RecyclerView recyclerView;
     UserAdapter userAdapter;
     @Override
@@ -64,17 +65,36 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         userViewModel.getAllUsers().observe(this, userAdapter::setUsers);
 
-        userAdapter.setDeleteClickListener(user -> new AlertDialog.Builder(this)
-                .setTitle("Delete User")
-                .setMessage("Are you sure you want to delete user " + user.getName() + "?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    userViewModel.delete(user);
-                    dialog.dismiss();
-                })
-                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
-                .show());
+        userAdapter.setDeleteClickListener(user -> {
+            //deleteOldDialog does not automatically become null when the dialog is dismissed.
+            //To ensure it becomes null, you need to explicitly set it to null after calling dialog.dismiss()
+            //How ever after reinitializing again it will not reference to dismissed dialog instead references to new dialog.
+            if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
+                Log.d("deleteOldDialog", "onCreate: " +deleteOldDialog.hashCode());
+                deleteOldDialog.dismiss();
+            }
 
-        mBinding.addIcon.setOnClickListener(v -> userDetailsDialog(null, null));
+            if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
+                return;
+            }
+
+            deleteOldDialog = new AlertDialog.Builder(this)
+                    .setTitle("Delete User")
+                    .setMessage("Are you sure you want to delete user " + user.getName() + "?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        userViewModel.delete(user);
+                        dialog.dismiss();
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        dialog.dismiss();
+                        Log.d("new dialog on NO click", "onCreate: "+deleteOldDialog.hashCode());
+                    })
+                    .create();
+            deleteOldDialog.show();
+            Log.d("new dialog", "onCreate: "+deleteOldDialog.hashCode());
+        });
+
+        mBinding.addIcon.setOnClickListener(v -> showUserDetailsDialog(null, null));
 
         //Below code is for selection of users and checkbox.
         mBinding.checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -109,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void userDetailsDialog(User editUser, Dialog userDetailsDialog) {
+    public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog) {
         //If the xml is not enclosed inside <layout> then it will throw error for below line.
 
         //And also initialized this dialog inside onCreate() method but got crashed during 2nd time click of edit icon
@@ -118,14 +138,14 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogAddUserBinding.getRoot());
 
-        AlertDialog dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(false);
+        addUserDetailsDialog = builder.create();
+        addUserDetailsDialog.setCanceledOnTouchOutside(false);
 
         //Recommended line and no need the set the background in XML.
-        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corner);
+        Objects.requireNonNull(addUserDetailsDialog.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corner);
 
         //Below line also works.
-        //Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        //Objects.requireNonNull(addUserDetailsDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         // Set up gender spinner
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -214,18 +234,21 @@ public class MainActivity extends AppCompatActivity {
                 editUser.setDob(dob);
                 editUser.setPhotoUri(photoPath);
                 userViewModel.update(editUser);
-                userDetailsDialog.dismiss();
+                editUserDetailsDialog.dismiss();
             }
-            dialog.dismiss();
+            addUserDetailsDialog.dismiss();
             photoUri = null;
         });
 
         dialogAddUserBinding.buttonCancel.setOnClickListener(v -> {
-            dialog.dismiss();
+            addUserDetailsDialog.dismiss();
             photoUri = null;
         });
 
-        dialog.show();
+        if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
+            return;
+        }
+        addUserDetailsDialog.show();
     }
 
     private int getIndexBasedOnGenderSelected(String gender) {
@@ -285,7 +308,6 @@ public class MainActivity extends AppCompatActivity {
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 cameraIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
-                //startActivity(cameraIntent);
             }
         }
     }

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.net.Uri;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,6 +38,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private UserDetailsLayoutBinding userDetailsLayoutBinding;
     private final ActivityMainBinding activityMainBinding;
     private final Dialog userProfileDialog, userDetailsDialog;
+    private AlertDialog addUserDetailsDialog, deleteDialog;
     private final WindowManager.LayoutParams params;
     private final DisplayMetrics displayMetrics;
     private int width, height;
@@ -154,6 +157,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         );
         userProfileDialog.setContentView(userProfileBinding.getRoot());
         userProfileBinding.setUser(user);
+
+        //Below lines are not working have to look.
+        /*if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
+            return;
+        }
+        if (deleteDialog != null && deleteDialog.isShowing()) {
+            return;
+        }*/
         if (!userProfileDialog.isShowing() && !userDetailsDialog.isShowing()) {
             userProfileDialog.show();
         }
@@ -175,6 +186,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             window.setLayout(params.width, params.height);
             window.setBackgroundDrawableResource(R.drawable.rounded_corner);
         }
+
+        //Below lines are not working have to look.
+        /*if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
+            return;
+        }
+        if (deleteDialog != null && deleteDialog.isShowing()) {
+            return;
+        }*/
         if (!userDetailsDialog.isShowing() && !userProfileDialog.isShowing()) {
             userDetailsDialog.show();
         }
@@ -183,7 +202,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         // of UserDetailsLayoutBinding, which is null in your onBindViewHolder method. So used it here.
         userDetailsLayoutBinding.editUser.setOnClickListener(v -> {
             if (context instanceof MainActivity) {
-                ((MainActivity) context).userDetailsDialog(user, userDetailsDialog);
+                ((MainActivity) context).showUserDetailsDialog(user, userDetailsDialog);
             }
         });
     }
