@@ -18,6 +18,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.memberslist.MainActivity;
 import com.example.memberslist.R;
 import com.example.memberslist.database.User;
 import com.example.memberslist.databinding.ActivityMainBinding;
@@ -177,6 +178,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         if (!userDetailsDialog.isShowing() && !userProfileDialog.isShowing()) {
             userDetailsDialog.show();
         }
+
+        //Tried to use in this in onBindViewHolder, but caused attempting to access the editUser field
+        // of UserDetailsLayoutBinding, which is null in your onBindViewHolder method. So used it here.
+        userDetailsLayoutBinding.editUser.setOnClickListener(v -> {
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).userDetailsDialog(user, userDetailsDialog);
+            }
+        });
     }
 
     //If the count is 0 it won't display in the list at all.

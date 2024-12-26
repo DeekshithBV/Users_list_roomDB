@@ -2,6 +2,7 @@ package com.example.memberslist;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST_CODE = 100;
     private Uri photoUri;
     private ActivityMainBinding mBinding;
-    private DialogAddUserBinding dialogAddUserBinding;
+    public DialogAddUserBinding dialogAddUserBinding;
     private UserViewModel userViewModel;
     RecyclerView recyclerView;
     UserAdapter userAdapter;
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
                 .show());
 
-        mBinding.addIcon.setOnClickListener(v -> userDetailsDialog());
+        mBinding.addIcon.setOnClickListener(v -> userDetailsDialog(null, null));
 
         //Below code is for selection of users and checkbox.
         mBinding.checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -108,8 +109,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void userDetailsDialog() {
+    public void userDetailsDialog(User editUser, Dialog userDetailsDialog) {
         //If the xml is not enclosed inside <layout> then it will throw error for below line.
+
+        //And also initialized this dialog inside onCreate() method but got crashed during 2nd time click of edit icon
+        //Because the dialog view is not null, so you have to call removeView().
         dialogAddUserBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.dialog_add_user, null, false);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogAddUserBinding.getRoot());
@@ -128,6 +132,18 @@ public class MainActivity extends AppCompatActivity {
                 R.array.gender_array, R.layout.single_textview);
         adapter.setDropDownViewResource(R.layout.single_textview);
         dialogAddUserBinding.spinnerGender.setAdapter(adapter);
+
+        //Populate existing user data if edit operation
+        if (editUser != null) {
+            dialogAddUserBinding.editTextUserName.setText(editUser.getName());
+            dialogAddUserBinding.DateOfBirth.setText(editUser.getDob());
+            photoUri = Uri.parse(editUser.getPhotoUri());
+            Glide.with(this)
+                            .load(photoUri)
+                                    .circleCrop()
+                                            .into(dialogAddUserBinding.imageViewPhoto);
+            dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+        }
 
         // Handle DOB selection
         dialogAddUserBinding.DateOfBirth.setOnClickListener(v -> {
@@ -187,9 +203,19 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String age = calculateAge(dob);
-            String photoPath = photoUri != null ? photoUri.toString() : getDefaultPhoto(gender);
-            User user = new User(userName, gender, dob, photoPath, age);
-            userViewModel.insert(user);
+            String photoPath = (photoUri != null && !photoUri.toString().startsWith("android.resource://")) ? photoUri.toString() : getDefaultPhoto(gender);
+            if (editUser == null) {
+                User user = new User(userName, gender, dob, photoPath, age);
+                userViewModel.insert(user);
+            } else {
+                editUser.setName(userName);
+                editUser.setGender(gender);
+                editUser.setAge(age);
+                editUser.setDob(dob);
+                editUser.setPhotoUri(photoPath);
+                userViewModel.update(editUser);
+                userDetailsDialog.dismiss();
+            }
             dialog.dismiss();
             photoUri = null;
         });
@@ -200,6 +226,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    private int getIndexBasedOnGenderSelected(String gender) {
+        if (gender.equalsIgnoreCase("(m)"))
+            return 0;
+        else if (gender.equalsIgnoreCase("(f)"))
+            return 1;
+        else return 2;
     }
 
     private String calculateAge(String dob) {
