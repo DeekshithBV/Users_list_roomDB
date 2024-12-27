@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.net.Uri;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +37,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private UserDetailsLayoutBinding userDetailsLayoutBinding;
     private final ActivityMainBinding activityMainBinding;
     private final Dialog userProfileDialog, userDetailsDialog;
-    private AlertDialog addUserDetailsDialog, deleteDialog;
+    private final AlertDialog addUserDetailsDialog;
     private final WindowManager.LayoutParams params;
     private final DisplayMetrics displayMetrics;
     private int width, height;
@@ -165,10 +164,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             return;
         }
 
-        //Below lines are not working have to look.
-        /*if (deleteDialog != null && deleteDialog.isShowing()) {
+        if (((MainActivity) context).getDeleteDialog() != null && ((MainActivity) context).getDeleteDialog().isShowing()) {
             return;
-        }*/
+        }
+
         if (!userProfileDialog.isShowing() && !userDetailsDialog.isShowing()) {
             userProfileDialog.show();
         }
@@ -195,10 +194,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             return;
         }
 
-        //Below lines are not working have to look.
-        /*if (deleteDialog != null && deleteDialog.isShowing()) {
+        if (((MainActivity) context).getDeleteDialog() != null && ((MainActivity) context).getDeleteDialog().isShowing()) {
             return;
-        }*/
+        }
+
         if (!userDetailsDialog.isShowing() && !userProfileDialog.isShowing()) {
             userDetailsDialog.show();
         }
@@ -206,9 +205,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         //Tried to use in this in onBindViewHolder, but caused attempting to access the editUser field
         // of UserDetailsLayoutBinding, which is null in your onBindViewHolder method. So used it here.
         userDetailsLayoutBinding.editUser.setOnClickListener(v -> {
-            if (context instanceof MainActivity) {
-                ((MainActivity) context).showUserDetailsDialog(user, userDetailsDialog, userDetailsLayoutBinding.editUser);
-            }
+            ((MainActivity) context).showUserDetailsDialog(user, userDetailsDialog, userDetailsLayoutBinding.editUser);
         });
     }
 

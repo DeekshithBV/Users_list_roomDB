@@ -11,6 +11,7 @@
     <string name="Add">Add</string>
     <string name="Cancel">Cancel</string>
     <string name="person_name">Please enter user name</string>
+    <string name="user_details">Enter user details</string>
     <string name="photo">+ Add Photo</string>
     <string name="male">Male</string>
     <string name="female">Female</string>

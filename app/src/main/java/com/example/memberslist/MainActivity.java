@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
@@ -80,6 +81,10 @@ public class MainActivity extends AppCompatActivity {
             if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
                 return;
             }
+            if ((userAdapter.getUserProfileDialog() != null && userAdapter.getUserProfileDialog().isShowing())
+                || (userAdapter.getUserDetailsDialog() != null && userAdapter.getUserDetailsDialog().isShowing())) {
+                return;
+            }
             initializeDeleteDialog(user);
             deleteOldDialog.show();
             Log.d("new dialog", "onCreate: "+deleteOldDialog.hashCode());
@@ -135,6 +140,10 @@ public class MainActivity extends AppCompatActivity {
                 .create();
     }
 
+    public AlertDialog getDeleteDialog() {
+        return deleteOldDialog;
+    }
+
     private void initAddUserDetailsDialog() {
         //If the xml is not enclosed inside <layout> then it will throw error for below line.
 
@@ -161,6 +170,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog, ImageView editIcon) {
+        //Below lines can't use because dialogAddUserBinding is initialized and inflated inside the onCreate
+        //methode, so on 2nd time click of add button the dialog view was not appearing.
+
+        /*if (dialogAddUserBinding != null && dialogAddUserBinding.getRoot().getParent() != null) {
+            ((ViewGroup) dialogAddUserBinding.getRoot().getParent()).removeView(dialogAddUserBinding.getRoot());
+        }*/
+
         //Populate existing user data if edit operation
         if (editUser != null) {
             dialogAddUserBinding.editTextUserName.setText(editUser.getName());
@@ -171,6 +187,13 @@ public class MainActivity extends AppCompatActivity {
                                     .circleCrop()
                                             .into(dialogAddUserBinding.imageViewPhoto);
             dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+        } else {
+            dialogAddUserBinding.editTextUserName.setText("");
+            dialogAddUserBinding.DateOfBirth.setText("");
+            dialogAddUserBinding.imageViewPhoto.setImageResource(R.drawable.empty_user_circle_icon);
+            dialogAddUserBinding.spinnerGender.setSelection(0);
+            dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
+            dialogAddUserBinding.editTextUserName.setError(null);
         }
 
         // Handle DOB selection
@@ -209,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
                 gender = "(U)";
             }
             String dob = Objects.requireNonNull(dialogAddUserBinding.DateOfBirth.getText()).toString();
-            //Uri photoUri = (Uri) imageViewPhoto.getTag();
 
             if (userName.isEmpty()) {
                 dialogAddUserBinding.editTextUserName.setError("Please enter user name!");
@@ -226,9 +248,9 @@ public class MainActivity extends AppCompatActivity {
                 dialogAddUserBinding.textInputLayoutDOB.setError("Please select DOB!");
                 dialogAddUserBinding.DateOfBirth.setHintTextColor(getResources().getColor(R.color.black));
                 return;
-            } else {
+            } /*else {
                 dialogAddUserBinding.DateOfBirth.setHint("Select DOB");
-            }
+            }*/
 
             String age = calculateAge(dob);
             String photoPath = (photoUri != null && !photoUri.toString().startsWith("android.resource://")) ? photoUri.toString() : getDefaultPhoto(gender);
@@ -291,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
             String formattedAge = String.format(getResources().getString(R.string.two_digits_after_decimal), age);
             return formattedAge +  "year(s)";
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.e("printStackTrace()", "An error occurred: "+e.getMessage(), e);
             return null;
         }
     }
@@ -336,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             return File.createTempFile("photo_", ".jpg", storageDir);
         } catch (IOException e){
-            e.printStackTrace();
+            Log.e("printStackTrace()", "An error occurred: "+e.getMessage(), e);
             return null;
         }
     }
