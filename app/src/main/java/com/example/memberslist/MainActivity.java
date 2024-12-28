@@ -13,7 +13,6 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
@@ -198,7 +197,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle DOB selection
         dialogAddUserBinding.DateOfBirth.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
+            Calendar calendar, oldCalendar;
+            calendar = Calendar.getInstance();
+            oldCalendar = Calendar.getInstance();
+            //Any modifications made to calendar will also affect oldCalendar, since they are referencing the same object in memory.
+            //calendar = oldCalendar = Calendar.getInstance(); --> [Chained assignment]
             DatePickerDialog datePickerDialog = new DatePickerDialog(this,
                     (view, year, month, dayOfMonth) -> {
                         String dob = dayOfMonth + "/" + (month + 1) + "/" + year;
@@ -208,8 +211,10 @@ public class MainActivity extends AppCompatActivity {
                     calendar.get(Calendar.YEAR),
                     calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
             datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-            Log.d("time", "callDialog: "+ System.currentTimeMillis() + " Dummmy : " + 31556926L * 110);
-            datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 31556926000L * 110);
+            oldCalendar.add(Calendar.YEAR, -110);
+            long minDate = oldCalendar.getTimeInMillis();
+            //datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 31556926000L * 110);
+            datePickerDialog.getDatePicker().setMinDate(minDate);
             datePickerDialog.show();
         });
 
