@@ -52,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
     public DialogAddUserBinding dialogAddUserBinding;
     private UserViewModel userViewModel;
     private AlertDialog addUserDetailsDialog, deleteOldDialog;
+    private Dialog editUserDetailsDialog;
+    private boolean isProgrammaticChange = false;
+    private User editUser, deleteUser;
     RecyclerView recyclerView;
     UserAdapter userAdapter;
     @Override
@@ -63,15 +66,65 @@ public class MainActivity extends AppCompatActivity {
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         recyclerView = mBinding.recyclerView;
         initAddUserDetailsDialog();
-        userAdapter = new UserAdapter(this, mBinding, addUserDetailsDialog);
+        userAdapter = new UserAdapter(this, mBinding, addUserDetailsDialog, userViewModel);
         recyclerView.setAdapter(userAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
+        if (deleteUser != null) {
+            initializeDeleteDialog(deleteUser);
+        }
+
+        //View model observers.
         userViewModel.getAllUsers().observe(this, userAdapter::setUsers);
+
+        userViewModel.getIsAddUserDialogVisible().observe(this, visible -> {
+            if (visible) {
+                addUserDetailsDialog.show();
+            }
+        });
+
+        userViewModel.getEditUserDialog().observe(this, editUser -> {
+            if (editUser != null) {
+                addUserDetailsDialog.show();
+                dialogAddUserBinding.editTextUserName.setText(editUser.getName());
+                dialogAddUserBinding.DateOfBirth.setText(editUser.getDob());
+                dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+                Glide.with(this)
+                        .load(Uri.parse(editUser.getPhotoUri()))
+                        .circleCrop()
+                        .into(dialogAddUserBinding.imageViewPhoto);
+            }
+        });
+
+        userViewModel.getDeleteUserDialog().observe(this, user -> {
+            if (user != null) {
+                deleteOldDialog.show();
+            }
+        });
+
+        userViewModel.getUserDetailsDialog().observe(this, user -> {
+            if (user != null) {
+                userAdapter.userDetailsLayoutBinding.setUser(user);
+                userAdapter.getUserDetailsDialog().show();
+            }
+        });
+
+        userViewModel.getUserProfileDialog().observe(this, user -> {
+            if (user != null) {
+                userAdapter.userProfileBinding.setUser(user);
+                userAdapter.getUserProfileDialog().show();
+            }
+        });
+
+        userAdapter.getUserProfileDialog().setOnDismissListener(dialog -> userViewModel.setUserProfileDialog(null));
+
+        userAdapter.getUserDetailsDialog().setOnDismissListener(dialog -> userViewModel.setUserDetailsDialog(null));
 
         userAdapter.setDeleteClickListener(user -> {
             //deleteOldDialog does not automatically become null when the dialog is dismissed.
             //To ensure it becomes null, you need to explicitly set it to null after calling dialog.dismiss()
             //How ever after reinitializing again it will not reference to dismissed dialog instead references to new dialog.
+            initializeDeleteDialog(user);
             if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
                 Log.d("deleteOldDialog", "onCreate: " +deleteOldDialog.hashCode());
                 deleteOldDialog.dismiss();
@@ -80,120 +133,26 @@ public class MainActivity extends AppCompatActivity {
             if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
                 return;
             }
+
             if ((userAdapter.getUserProfileDialog() != null && userAdapter.getUserProfileDialog().isShowing())
                 || (userAdapter.getUserDetailsDialog() != null && userAdapter.getUserDetailsDialog().isShowing())) {
                 return;
             }
-            initializeDeleteDialog(user);
-            deleteOldDialog.show();
-            Log.d("new dialog", "onCreate: "+deleteOldDialog.hashCode());
+            //initializeDeleteDialog(user);
+            if (deleteOldDialog != null) {
+                deleteOldDialog.show();
+            }
+            userViewModel.setDeleteUserDialog(user);
         });
 
         mBinding.addIcon.setOnClickListener(v -> showUserDetailsDialog(null, null, null));
 
-        //Below code is for selection of users and checkbox.
-        mBinding.checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            new Handler(Looper.getMainLooper()).post(() -> {
-                userAdapter.notifyDataSetChanged();
-                if (isChecked) {
-                    userAdapter.selectAll();
-                    mBinding.checkbox.setVisibility(View.VISIBLE);
-                    mBinding.selectAll.setVisibility(View.VISIBLE);
-                } else if (!userAdapter.getSelectedUsers().isEmpty()) {
-                    mBinding.checkbox.setVisibility(View.VISIBLE);
-                    mBinding.selectAll.setVisibility(View.VISIBLE);
-                } else {
-                    userAdapter.clearAll();
-                    mBinding.checkbox.setVisibility(View.GONE);
-                    mBinding.selectAll.setVisibility(View.GONE);
-                }
-            });
+        dialogAddUserBinding.buttonCancel.setOnClickListener(v -> {
+            userViewModel.setIsAddUserDialogVisible(false);
+            userViewModel.setEditUserDialog(null);
+            addUserDetailsDialog.dismiss();
+            photoUri = null;
         });
-
-        recyclerView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-            if (userAdapter.getSelectedUsers().size() < userAdapter.getItemCount()) {
-                mBinding.checkbox.setChecked(false);
-            }
-            if (!userAdapter.getSelectedUsers().isEmpty()) {
-                mBinding.checkbox.setVisibility(View.VISIBLE);
-                mBinding.selectAll.setVisibility(View.VISIBLE);
-            } else {
-                mBinding.checkbox.setVisibility(View.GONE);
-                mBinding.selectAll.setVisibility(View.GONE);
-            }
-        });
-    }
-
-    private void initializeDeleteDialog(@NonNull User user) {
-        deleteOldDialog = new AlertDialog.Builder(this)
-                .setTitle("Delete User")
-                .setMessage("Are you sure you want to delete user " + user.getName() + "?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    userViewModel.delete(user);
-                    dialog.dismiss();
-                })
-                .setNegativeButton("No", (dialog, which) -> {
-                    dialog.dismiss();
-                    Log.d("new dialog on NO click", "onCreate: "+deleteOldDialog.hashCode());
-                })
-                .create();
-    }
-
-    public AlertDialog getDeleteDialog() {
-        return deleteOldDialog;
-    }
-
-    private void initAddUserDetailsDialog() {
-        //If the xml is not enclosed inside <layout> then it will throw error for below line.
-
-        //And also initialized this dialog inside onCreate() method but got crashed during 2nd time click of edit icon
-        //Because the dialog view is not null, so you have to call removeView().
-        dialogAddUserBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.dialog_add_user, null, false);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(dialogAddUserBinding.getRoot());
-
-        addUserDetailsDialog = builder.create();
-        addUserDetailsDialog.setCanceledOnTouchOutside(false);
-
-        //Recommended line and no need the set the background in XML.
-        Objects.requireNonNull(addUserDetailsDialog.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corner);
-
-        //Below line also works.
-        //Objects.requireNonNull(addUserDetailsDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        // Set up gender spinner
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.gender_array, R.layout.single_textview);
-        adapter.setDropDownViewResource(R.layout.single_textview);
-        dialogAddUserBinding.spinnerGender.setAdapter(adapter);
-    }
-
-    public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog, ImageView editIcon) {
-        //Below lines can't use because dialogAddUserBinding is initialized and inflated inside the onCreate
-        //methode, so on 2nd time click of add button the dialog view was not appearing.
-
-        /*if (dialogAddUserBinding != null && dialogAddUserBinding.getRoot().getParent() != null) {
-            ((ViewGroup) dialogAddUserBinding.getRoot().getParent()).removeView(dialogAddUserBinding.getRoot());
-        }*/
-
-        //Populate existing user data if edit operation
-        if (editUser != null) {
-            dialogAddUserBinding.editTextUserName.setText(editUser.getName());
-            dialogAddUserBinding.DateOfBirth.setText(editUser.getDob());
-            photoUri = Uri.parse(editUser.getPhotoUri());
-            Glide.with(this)
-                            .load(photoUri)
-                                    .circleCrop()
-                                            .into(dialogAddUserBinding.imageViewPhoto);
-            dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
-        } else {
-            dialogAddUserBinding.editTextUserName.setText("");
-            dialogAddUserBinding.DateOfBirth.setText("");
-            dialogAddUserBinding.imageViewPhoto.setImageResource(R.drawable.empty_user_circle_icon);
-            dialogAddUserBinding.spinnerGender.setSelection(0);
-            dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
-            dialogAddUserBinding.editTextUserName.setError(null);
-        }
 
         // Handle DOB selection
         dialogAddUserBinding.DateOfBirth.setOnClickListener(v -> {
@@ -224,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
             openCamera();
         });
 
+        // Add user
         dialogAddUserBinding.buttonAdd.setOnClickListener(v -> {
             String userName = dialogAddUserBinding.editTextUserName.getText().toString().trim();
 
@@ -272,13 +232,120 @@ public class MainActivity extends AppCompatActivity {
                 editUserDetailsDialog.dismiss();
             }
             addUserDetailsDialog.dismiss();
+            userViewModel.setIsAddUserDialogVisible(false);
+            userViewModel.setEditUserDialog(null);
             photoUri = null;
         });
 
-        dialogAddUserBinding.buttonCancel.setOnClickListener(v -> {
-            addUserDetailsDialog.dismiss();
-            photoUri = null;
+        //Below code is for selection of users and checkbox.
+        mBinding.checkbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isProgrammaticChange) return;
+
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (isChecked) {
+                    userAdapter.selectAll();
+                    /*mBinding.checkbox.setVisibility(View.VISIBLE);
+                    mBinding.selectAll.setVisibility(View.VISIBLE);*/
+                } /*else if (!userAdapter.getSelectedUsers().isEmpty()) {
+                    mBinding.checkbox.setVisibility(View.VISIBLE);
+                    mBinding.selectAll.setVisibility(View.VISIBLE);
+                }*/ else {
+                    userAdapter.clearAll();
+                    mBinding.checkbox.setVisibility(View.GONE);
+                    mBinding.selectAll.setVisibility(View.GONE);
+                }
+                userAdapter.notifyDataSetChanged();
+            });
         });
+
+        recyclerView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            isProgrammaticChange = true;
+            mBinding.checkbox.setChecked(userAdapter.getSelectedUsers().size() == userAdapter.getItemCount() && userAdapter.getItemCount() != 0);
+            isProgrammaticChange = false;
+
+            if (!userAdapter.getSelectedUsers().isEmpty()) {
+                mBinding.checkbox.setVisibility(View.VISIBLE);
+                mBinding.selectAll.setVisibility(View.VISIBLE);
+            } else {
+                mBinding.checkbox.setVisibility(View.GONE);
+                mBinding.selectAll.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void initializeDeleteDialog(@NonNull User user) {
+        deleteOldDialog = new AlertDialog.Builder(this)
+                .setTitle("Delete User")
+                .setMessage("Are you sure you want to delete user " + user.getName() + "?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    userViewModel.delete(user);
+                    dialog.dismiss();
+                })
+                .setNegativeButton("No", (dialog, which) -> {
+                    dialog.dismiss();
+                    Log.d("new dialog on NO click", "onCreate: "+deleteOldDialog.hashCode());
+                })
+                .create();
+        deleteOldDialog.setOnDismissListener(dialog -> userViewModel.setDeleteUserDialog(null));
+    }
+
+    public AlertDialog getDeleteDialog() {
+        return deleteOldDialog;
+    }
+
+    private void initAddUserDetailsDialog() {
+        //If the xml is not enclosed inside <layout> then it will throw error for below line.
+
+        //And also initialized this dialog inside onCreate() method but got crashed during 2nd time click of edit icon
+        //Because the dialog view is not null, so you have to call removeView().
+        dialogAddUserBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.dialog_add_user, null, false);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogAddUserBinding.getRoot());
+
+        addUserDetailsDialog = builder.create();
+        addUserDetailsDialog.setCanceledOnTouchOutside(false);
+
+        //Recommended line and no need the set the background in XML.
+        Objects.requireNonNull(addUserDetailsDialog.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corner);
+
+        //Below line also works.
+        //Objects.requireNonNull(addUserDetailsDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        // Set up gender spinner
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.gender_array, R.layout.single_textview);
+        adapter.setDropDownViewResource(R.layout.single_textview);
+        dialogAddUserBinding.spinnerGender.setAdapter(adapter);
+    }
+
+    public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog, ImageView editIcon) {
+        //Below lines can't use because dialogAddUserBinding is initialized and inflated inside the onCreate
+        //methode, so on 2nd time click of add button the dialog view was not appearing.
+
+        /*if (dialogAddUserBinding != null && dialogAddUserBinding.getRoot().getParent() != null) {
+            ((ViewGroup) dialogAddUserBinding.getRoot().getParent()).removeView(dialogAddUserBinding.getRoot());
+        }*/
+
+        this.editUser = editUser;
+        this.editUserDetailsDialog = editUserDetailsDialog;
+        //Populate existing user data if edit operation
+        if (editUser != null) {
+            dialogAddUserBinding.editTextUserName.setText(editUser.getName());
+            dialogAddUserBinding.DateOfBirth.setText(editUser.getDob());
+            photoUri = Uri.parse(editUser.getPhotoUri());
+            Glide.with(this)
+                            .load(photoUri)
+                                    .circleCrop()
+                                            .into(dialogAddUserBinding.imageViewPhoto);
+            dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+        } else {
+            dialogAddUserBinding.editTextUserName.setText("");
+            dialogAddUserBinding.DateOfBirth.setText("");
+            dialogAddUserBinding.imageViewPhoto.setImageResource(R.drawable.empty_user_circle_icon);
+            dialogAddUserBinding.spinnerGender.setSelection(0);
+            dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
+            dialogAddUserBinding.editTextUserName.setError(null);
+        }
 
         if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
             return;
@@ -290,6 +357,8 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         addUserDetailsDialog.show();
+        userViewModel.setIsAddUserDialogVisible(true);
+        userViewModel.setEditUserDialog(editUser);
     }
 
     private int getIndexBasedOnGenderSelected(@NonNull String gender) {

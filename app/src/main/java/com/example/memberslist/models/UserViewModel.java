@@ -5,6 +5,7 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.memberslist.database.User;
 import com.example.memberslist.repository.UserRepository;
@@ -15,6 +16,12 @@ public class UserViewModel extends AndroidViewModel {
     //private final UserDao userDao;
     private final UserRepository userRepository;
     private final LiveData<List<User>> allUsers;
+    private MutableLiveData<Boolean> isAddUserDialogVisible = new MutableLiveData<>(false);
+    private MutableLiveData<User> editUserDialog = new MutableLiveData<>();
+    private MutableLiveData<User> deleteUserDialog = new MutableLiveData<>();
+    private MutableLiveData<User> userProfileDialog = new MutableLiveData<>();
+    private MutableLiveData<User> userDetailsDialog = new MutableLiveData<>();
+
     public UserViewModel(@NonNull Application application) {
         super(application);
         //UserDatabase db = UserDatabase.getInstance(application);
@@ -40,6 +47,46 @@ public class UserViewModel extends AndroidViewModel {
 
     public void update(User user) {
         userRepository.update(user);
+    }
+
+    public MutableLiveData<Boolean> getIsAddUserDialogVisible() {
+        return isAddUserDialogVisible;
+    }
+
+    public void setIsAddUserDialogVisible(Boolean visible) {
+        isAddUserDialogVisible.setValue(visible);
+    }
+
+    public MutableLiveData<User> getUserProfileDialog() {
+        return userProfileDialog;
+    }
+
+    public void setUserProfileDialog(User user) {
+        userProfileDialog.setValue(user);
+    }
+
+    public MutableLiveData<User> getUserDetailsDialog() {
+        return userDetailsDialog;
+    }
+
+    public void setUserDetailsDialog(User user) {
+        userDetailsDialog.setValue(user);
+    }
+
+    public void setDeleteUserDialog(User user) {
+        deleteUserDialog.setValue(user);
+    }
+
+    public MutableLiveData<User> getDeleteUserDialog() {
+        return deleteUserDialog;
+    }
+
+    public void setEditUserDialog(User user) {
+        editUserDialog.setValue(user);
+    }
+
+    public MutableLiveData<User> getEditUserDialog() {
+        return editUserDialog;
     }
     /*private static class InsertAsyncTask extends AsyncTask<User,Void, Void> {
         private final UserDao asyncTaskDao;

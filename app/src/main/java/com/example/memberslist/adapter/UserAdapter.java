@@ -25,6 +25,7 @@ import com.example.memberslist.database.User;
 import com.example.memberslist.databinding.ActivityMainBinding;
 import com.example.memberslist.databinding.DialogUserProfileBinding;
 import com.example.memberslist.databinding.UserDetailsLayoutBinding;
+import com.example.memberslist.models.UserViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,25 +34,51 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private List<User> users = new ArrayList<>();
     private final Context context;
     private OnDeleteClickListener onDeleteClickListener;
-    private DialogUserProfileBinding userProfileBinding;
-    private UserDetailsLayoutBinding userDetailsLayoutBinding;
+    public DialogUserProfileBinding userProfileBinding;
+    public UserDetailsLayoutBinding userDetailsLayoutBinding;
     private final ActivityMainBinding activityMainBinding;
     private final Dialog userProfileDialog, userDetailsDialog;
     private final AlertDialog addUserDetailsDialog;
     private final WindowManager.LayoutParams params;
     private final DisplayMetrics displayMetrics;
+    private final UserViewModel userViewModel;
     private int width, height;
     private boolean isSelectionMode = false;
     private final List<User> selectedUsers = new ArrayList<>();
 
-    public UserAdapter(Context context, ActivityMainBinding mBinding, AlertDialog addUserDetailsDialog) {
+    public UserAdapter(Context context, ActivityMainBinding mBinding, AlertDialog addUserDetailsDialog, UserViewModel userViewModel) {
         this.context = context;
         this.activityMainBinding = mBinding;
         this.addUserDetailsDialog = addUserDetailsDialog;
+        this.userViewModel = userViewModel;
         userProfileDialog = new Dialog(context);
         userDetailsDialog = new Dialog(context);
         params = new WindowManager.LayoutParams();
         displayMetrics = context.getResources().getDisplayMetrics();
+
+        userProfileBinding = DataBindingUtil.inflate(
+                LayoutInflater.from(context),
+                R.layout.dialog_user_profile,
+                null,
+                false
+        );
+        userProfileDialog.setContentView(userProfileBinding.getRoot());
+
+        userDetailsLayoutBinding = DataBindingUtil.inflate(
+                LayoutInflater.from(context),
+                R.layout.user_details_layout,
+                null,
+                false
+        );
+        userDetailsDialog.setContentView(userDetailsLayoutBinding.getRoot());
+
+        Window window = userDetailsDialog.getWindow();
+        if (window != null) {
+            params.width = width = (int) (displayMetrics.widthPixels * .9);
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            window.setLayout(params.width, params.height);
+            window.setBackgroundDrawableResource(R.drawable.rounded_corner);
+        }
     }
 
     public void setDeleteClickListener(OnDeleteClickListener onDeleteClickListener) {
@@ -96,42 +123,37 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         });
 
         //Below code is for selection of users and checkbox.
-        activityMainBinding.checkbox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
-        activityMainBinding.checkbox.setChecked(selectedUsers.size() == getItemCount());
-
+        holder.itemView.setBackgroundResource(selectedUsers.contains(user) ? R.drawable.selected_users_color : R.drawable.rounded_corner);
         holder.itemView.setOnLongClickListener(v -> {
-            selectedUsers.add(user);
+            //isLongPressTriggered = true;
+            /*if (!selectedUsers.contains(user)) {
+                selectedUsers.add(user);
+            }
             isSelectionMode = true;
             activityMainBinding.checkbox.setVisibility(View.VISIBLE);
-            activityMainBinding.selectAll.setVisibility(View.VISIBLE);
-            notifyDataSetChanged();
-            return false;
+            activityMainBinding.selectAll.setVisibility(View.VISIBLE);*/
+
+            if (!isSelectionMode) {
+                isSelectionMode = true;
+                selectedUsers.add(user);
+                notifyDataSetChanged();
+            }
+            return true;
         });
 
         holder.itemView.setOnClickListener(v -> {
+            /*if (isLongPressTriggered) {
+                isLongPressTriggered = false;
+            }*/
             if (isSelectionMode) {
                 if (selectedUsers.contains(user)) {
                     selectedUsers.remove(user);
+                    if (selectedUsers.isEmpty())
+                        isSelectionMode = false;
                 } else {
                     selectedUsers.add(user);
                 }
                 notifyDataSetChanged();
-            }
-        });
-
-        activityMainBinding.checkbox.setOnClickListener(v -> {
-            if (activityMainBinding.checkbox.isChecked()) {
-                if (!selectedUsers.contains(user))
-                    selectedUsers.add(user);
-                else
-                    selectedUsers.remove(user);
-                notifyDataSetChanged();
-            }
-            if (activityMainBinding.checkbox.isChecked() && getSelectedUsers().size() == getItemCount()) {
-                activityMainBinding.checkbox.setChecked(false);
-                clearAll();
-                activityMainBinding.checkbox.setVisibility(View.GONE);
-                activityMainBinding.selectAll.setVisibility(View.GONE);
             }
         });
     }
@@ -151,13 +173,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     }
 
     private void showUserProfileDialog(User user) {
-        userProfileBinding = DataBindingUtil.inflate(
-                LayoutInflater.from(context),
-                R.layout.dialog_user_profile,
-                null,
-                false
-        );
-        userProfileDialog.setContentView(userProfileBinding.getRoot());
         userProfileBinding.setUser(user);
 
         if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
@@ -170,25 +185,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
         if (!userProfileDialog.isShowing() && !userDetailsDialog.isShowing()) {
             userProfileDialog.show();
+            userViewModel.setUserProfileDialog(user);
         }
+
+        // This was not working here so moved it to mainActivity.
+        /*userProfileDialog.setOnDismissListener(dialog -> {
+            userViewModel.setUserProfileDialog(null);
+        });*/
     }
 
     private void showUserDetailsLayout(User user) {
-        userDetailsLayoutBinding = DataBindingUtil.inflate(
-                LayoutInflater.from(context),
-                R.layout.user_details_layout,
-                null,
-                false
-        );
-        userDetailsDialog.setContentView(userDetailsLayoutBinding.getRoot());
         userDetailsLayoutBinding.setUser(user);
-        Window window = userDetailsDialog.getWindow();
-        if (window != null) {
-            params.width = width = (int) (displayMetrics.widthPixels * .9);
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            window.setLayout(params.width, params.height);
-            window.setBackgroundDrawableResource(R.drawable.rounded_corner);
-        }
 
         if (addUserDetailsDialog != null && addUserDetailsDialog.isShowing()) {
             return;
@@ -200,7 +207,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
         if (!userDetailsDialog.isShowing() && !userProfileDialog.isShowing()) {
             userDetailsDialog.show();
+            userViewModel.setUserDetailsDialog(user);
         }
+
+        // This was not working here so moved it to mainActivity.
+        /*userDetailsDialog.setOnDismissListener(dialog -> {
+            userViewModel.setUserDetailsDialog(null);
+        });*/
 
         //Tried to use in this in onBindViewHolder, but caused attempting to access the editUser field
         // of UserDetailsLayoutBinding, which is null in your onBindViewHolder method. So used it here.
