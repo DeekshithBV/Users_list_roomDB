@@ -366,8 +366,15 @@ public class MainActivity extends AppCompatActivity {
 
             Calendar today = Calendar.getInstance();
             double age = today.get(Calendar.YEAR) - dobCalendar.get(Calendar.YEAR);
-            double age_in_month = (double) (today.get(Calendar.MONTH) - dobCalendar.get(Calendar.MONTH)) /12;
-            if (today.get(Calendar.DAY_OF_YEAR) < dobCalendar.get(Calendar.DAY_OF_YEAR)) {
+            double age_in_month;
+            if (today.get(Calendar.MONTH) >= dobCalendar.get(Calendar.MONTH))
+                age_in_month = (double) (today.get(Calendar.MONTH) - dobCalendar.get(Calendar.MONTH)) / 12;
+            else {
+                age_in_month = dobCalendar.get(Calendar.MONTH) - today.get(Calendar.MONTH);
+                age_in_month = (12 - age_in_month)/12;
+            }
+            if (today.get(Calendar.DAY_OF_YEAR) < dobCalendar.get(Calendar.DAY_OF_YEAR) &&
+                    today.get(Calendar.MONTH) != dobCalendar.get(Calendar.MONTH)) {
                 age--;
             }
             age = age + age_in_month;
