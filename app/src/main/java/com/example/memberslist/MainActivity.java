@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private Dialog editUserDetailsDialog;
     private boolean isProgrammaticChange = false;
     private User editUser, deleteUser;
+    private ImageView editIcon;
     RecyclerView recyclerView;
     UserAdapter userAdapter;
     @Override
@@ -84,15 +85,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         userViewModel.getEditUserDialog().observe(this, editUser -> {
-            if (editUser != null) {
-                addUserDetailsDialog.show();
-                dialogAddUserBinding.editTextUserName.setText(editUser.getName());
-                dialogAddUserBinding.DateOfBirth.setText(editUser.getDob());
-                dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
-                Glide.with(this)
-                        .load(Uri.parse(editUser.getPhotoUri()))
-                        .circleCrop()
-                        .into(dialogAddUserBinding.imageViewPhoto);
+            if (editUser != null && addUserDetailsDialog.isShowing()) {
+                showUserDetailsDialog(editUser, userAdapter.getUserDetailsDialog(), userAdapter.userDetailsLayoutBinding.editUser);
             }
         });
 
@@ -328,16 +322,10 @@ public class MainActivity extends AppCompatActivity {
 
         this.editUser = editUser;
         this.editUserDetailsDialog = editUserDetailsDialog;
+
         //Populate existing user data if edit operation
         if (editUser != null) {
-            dialogAddUserBinding.editTextUserName.setText(editUser.getName());
-            dialogAddUserBinding.DateOfBirth.setText(editUser.getDob());
-            photoUri = Uri.parse(editUser.getPhotoUri());
-            Glide.with(this)
-                            .load(photoUri)
-                                    .circleCrop()
-                                            .into(dialogAddUserBinding.imageViewPhoto);
-            dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+            editUserDetails(editUser);
         } else {
             dialogAddUserBinding.editTextUserName.setText("");
             dialogAddUserBinding.DateOfBirth.setText("");
@@ -358,7 +346,6 @@ public class MainActivity extends AppCompatActivity {
         }
         addUserDetailsDialog.show();
         userViewModel.setIsAddUserDialogVisible(true);
-        userViewModel.setEditUserDialog(editUser);
     }
 
     private int getIndexBasedOnGenderSelected(@NonNull String gender) {
@@ -451,5 +438,16 @@ public class MainActivity extends AppCompatActivity {
             //.placeholder(R.drawable.placeholder) --> can be used to display a temporary img while the actual img is getting loaded.
             dialogAddUserBinding.imageViewPhoto.setTag(photoUri); // Save the URI as a tag
         }
+    }
+
+    private void editUserDetails(@NonNull User editUser) {
+        dialogAddUserBinding.editTextUserName.setText(editUser.getName());
+        dialogAddUserBinding.DateOfBirth.setText(editUser.getDob());
+        photoUri = Uri.parse(editUser.getPhotoUri());
+        Glide.with(this)
+                .load(photoUri)
+                .circleCrop()
+                .into(dialogAddUserBinding.imageViewPhoto);
+        dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
     }
 }

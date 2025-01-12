@@ -120,6 +120,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.photo.setOnClickListener(v -> showUserProfileDialog(user));
         holder.user_details.setOnClickListener(v -> {
             showUserDetailsLayout(user);
+            userViewModel.setEditUserDialog(user);
         });
 
         //Below code is for selection of users and checkbox.
@@ -219,6 +220,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         // of UserDetailsLayoutBinding, which is null in your onBindViewHolder method. So used it here.
         userDetailsLayoutBinding.editUser.setOnClickListener(v -> {
             ((MainActivity) context).showUserDetailsDialog(user, userDetailsDialog, userDetailsLayoutBinding.editUser);
+            userDetailsDialog.dismiss();
         });
     }
 
