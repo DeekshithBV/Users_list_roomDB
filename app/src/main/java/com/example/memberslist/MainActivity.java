@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (dob.isEmpty()) {
                 dialogAddUserBinding.textInputLayoutDOB.setError("Please select DOB!");
-                dialogAddUserBinding.DateOfBirth.setHintTextColor(getResources().getColor(R.color.black));
+                dialogAddUserBinding.DateOfBirth.setHintTextColor(getResources().getColor(R.color.black, null));
                 return;
             } /*else {
                 dialogAddUserBinding.DateOfBirth.setHint("Select DOB");
@@ -327,12 +327,7 @@ public class MainActivity extends AppCompatActivity {
         if (editUser != null) {
             editUserDetails(editUser);
         } else {
-            dialogAddUserBinding.editTextUserName.setText("");
-            dialogAddUserBinding.DateOfBirth.setText("");
-            dialogAddUserBinding.imageViewPhoto.setImageResource(R.drawable.empty_user_circle_icon);
-            dialogAddUserBinding.spinnerGender.setSelection(0);
-            dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
-            dialogAddUserBinding.editTextUserName.setError(null);
+            emptyUserDialog();
         }
 
         if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
@@ -456,5 +451,14 @@ public class MainActivity extends AppCompatActivity {
                 .circleCrop()
                 .into(dialogAddUserBinding.imageViewPhoto);
         dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+    }
+
+    private void emptyUserDialog() {
+        dialogAddUserBinding.editTextUserName.setText("");
+        dialogAddUserBinding.DateOfBirth.setText("");
+        dialogAddUserBinding.imageViewPhoto.setImageResource(R.drawable.empty_user_circle_icon);
+        dialogAddUserBinding.spinnerGender.setSelection(0);
+        dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
+        dialogAddUserBinding.editTextUserName.setError(null);
     }
 }
