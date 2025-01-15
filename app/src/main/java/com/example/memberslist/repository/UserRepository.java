@@ -34,4 +34,7 @@ public class UserRepository {
     public void update(User user) {
         executorService.execute(() -> userDao.updateUser(user));
     }
+    public LiveData<List<User>> searchUsersByName(String query) {
+        return userDao.searchUsersByName(query);
+    }
 }

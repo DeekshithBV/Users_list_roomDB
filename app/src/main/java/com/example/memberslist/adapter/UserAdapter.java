@@ -263,4 +263,22 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     public interface OnDeleteClickListener {
         void onDeleteClick(User user);
     }
+
+    public User deleteUserAtPosition(int position) {
+        if (position >= 0 && position < users.size()) {
+            User user = users.get(position);
+            users.remove(position);
+            notifyItemRemoved(position);
+
+            //Notify the viewmodel to delete user from DB.
+            userViewModel.delete(user);
+            return user;
+        }
+        return null;
+    }
+
+    public void addUserAtPosition(User addDeletedUser, int position) {
+        users.add(position, addDeletedUser);
+        userViewModel.insert(addDeletedUser);
+    }
 }

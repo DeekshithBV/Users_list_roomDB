@@ -22,4 +22,7 @@ public interface UserDao {
 
     @Query("SELECT * FROM user_table ORDER BY id ASC")
     LiveData<List<User>> getAllUsers();
+
+    @Query("SELECT * FROM USER_TABLE WHERE name LIKE '%' || :searchQuery || '%'")
+    LiveData<List<User>> searchUsersByName(String searchQuery);
 }

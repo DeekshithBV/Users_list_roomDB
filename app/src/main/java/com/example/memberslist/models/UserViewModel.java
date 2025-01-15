@@ -16,6 +16,7 @@ public class UserViewModel extends AndroidViewModel {
     //private final UserDao userDao;
     private final UserRepository userRepository;
     private final LiveData<List<User>> allUsers;
+    private LiveData<List<User>> searchResults;
     private MutableLiveData<Boolean> isAddUserDialogVisible = new MutableLiveData<>(false);
     private MutableLiveData<User> editUserDialog = new MutableLiveData<>();
     private MutableLiveData<User> deleteUserDialog = new MutableLiveData<>();
@@ -87,6 +88,11 @@ public class UserViewModel extends AndroidViewModel {
 
     public MutableLiveData<User> getEditUserDialog() {
         return editUserDialog;
+    }
+
+    public LiveData<List<User>> searchUsers(String query) {
+        searchResults = userRepository.searchUsersByName(query);
+        return searchResults;
     }
     /*private static class InsertAsyncTask extends AsyncTask<User,Void, Void> {
         private final UserDao asyncTaskDao;

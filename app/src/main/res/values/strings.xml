@@ -23,4 +23,5 @@
         <item>Female</item>
         <item>Unknown</item>
     </string-array>
+    <string name="search_name">Search users by name</string>
 </resources>

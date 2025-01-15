@@ -11,10 +11,14 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -24,6 +28,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,6 +38,7 @@ import com.example.memberslist.database.User;
 import com.example.memberslist.databinding.ActivityMainBinding;
 import com.example.memberslist.databinding.DialogAddUserBinding;
 import com.example.memberslist.models.UserViewModel;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +47,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
@@ -265,6 +272,58 @@ public class MainActivity extends AppCompatActivity {
                 mBinding.selectAll.setVisibility(View.GONE);
             }
         });
+
+        mBinding.searchEditText.addTextChangedListener(new TextWatcher(){
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchUsers(s.toString());
+                /*if (s.toString().isEmpty())
+                    mBinding.closeIcon.setVisibility(View.GONE);
+                else
+                    mBinding.closeIcon.setVisibility(View.VISIBLE);*/
+
+                //If else replaced with tertiary operator.
+                mBinding.closeIcon.setVisibility(s.toString().isEmpty() ? View.GONE : View.VISIBLE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        mBinding.closeIcon.setOnClickListener(v -> {
+            mBinding.searchEditText.setText("");
+            hideKeyboard();
+        });
+
+        //Delete user by swiping left/right
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                User deletedUser = userAdapter.deleteUserAtPosition(position);
+                Toast.makeText(MainActivity.this, "User" + deletedUser.getName() + "deleted", Toast.LENGTH_SHORT).show();
+
+                Snackbar.make(recyclerView, "User " + deletedUser.getName() + " deleted", Snackbar.LENGTH_LONG)
+                        .setAction("UNDO", v -> {
+                            userAdapter.addUserAtPosition(deletedUser, position);
+                        })
+                        .show();
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -413,6 +472,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @androidx.annotation.Nullable
     private File createImageFile(){
         File storageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),"");
         if (!storageDir.exists()){
@@ -460,5 +520,26 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.spinnerGender.setSelection(0);
         dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
         dialogAddUserBinding.editTextUserName.setError(null);
+    }
+
+    private void searchUsers(String query) {
+        userViewModel.searchUsers(query).observe(this, users -> {
+            if (users == null || users.isEmpty()) {
+                mBinding.noUsersTextView.setVisibility(View.VISIBLE);
+                mBinding.recyclerView.setVisibility(View.GONE);
+                userAdapter.setUsers(Collections.emptyList());
+            } else {
+                mBinding.noUsersTextView.setVisibility(View.GONE);
+                mBinding.recyclerView.setVisibility(View.VISIBLE);
+                userAdapter.setUsers(users);
+            }
+        });
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(mBinding.searchEditText.getWindowToken(), 0);
+        }
     }
 }
