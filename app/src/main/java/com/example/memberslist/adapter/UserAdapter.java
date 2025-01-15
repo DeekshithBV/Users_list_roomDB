@@ -279,6 +279,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     public void addUserAtPosition(User addDeletedUser, int position) {
         users.add(position, addDeletedUser);
+        notifyItemInserted(position);
         userViewModel.insert(addDeletedUser);
     }
 }

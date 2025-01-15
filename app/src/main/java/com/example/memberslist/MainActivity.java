@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         userAdapter = new UserAdapter(this, mBinding, addUserDetailsDialog, userViewModel);
         recyclerView.setAdapter(userAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mBinding.closeIcon.setVisibility(mBinding.searchEditText.getText().toString().isEmpty() ? View.GONE : View.VISIBLE);
         this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
         if (deleteUser != null) {
             initializeDeleteDialog(deleteUser);
