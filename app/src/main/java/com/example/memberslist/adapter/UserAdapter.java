@@ -2,7 +2,9 @@ package com.example.memberslist.adapter;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Parcelable;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -222,6 +224,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             ((MainActivity) context).showUserDetailsDialog(user, userDetailsDialog, userDetailsLayoutBinding.editUser);
             userDetailsDialog.dismiss();
         });
+
+        userDetailsLayoutBinding.userPhoneVal.setOnClickListener(v -> {
+            if (!userDetailsLayoutBinding.userPhoneVal.getText().toString().isEmpty()) {
+                showPhoneNumberOptions(user.getPhoneNumber());
+            }
+        });
+
     }
 
     public Dialog getUserProfileDialog() {
@@ -281,5 +290,31 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         users.add(position, addDeletedUser);
         notifyItemInserted(position);
         userViewModel.insert(addDeletedUser);
+    }
+
+    private void showPhoneNumberOptions(String phoneNumber) {
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:" +phoneNumber));
+
+        Intent messageIntent = new Intent(Intent.ACTION_VIEW);
+        messageIntent.setData(Uri.parse("sms:" + phoneNumber));
+
+        Intent whatsappIntent = new Intent(Intent.ACTION_VIEW);
+        whatsappIntent.setData(Uri.parse("https://wa.me/" + phoneNumber));
+
+        Intent telegramIntent = new Intent(Intent.ACTION_VIEW);
+        telegramIntent.setData(Uri.parse("tg://resolve?domain=" + phoneNumber));
+
+        // List of intents for different communication apps
+        List<Intent> intentList = new ArrayList<>();
+        intentList.add(callIntent);
+        intentList.add(messageIntent);
+        intentList.add(whatsappIntent);
+        intentList.add(telegramIntent);
+
+        // Use Intent.createChooser to show all available apps
+        Intent chooserIntent = Intent.createChooser(intentList.get(0), "Select Communication App");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[0]));
+        context.startActivity(chooserIntent);
     }
 }

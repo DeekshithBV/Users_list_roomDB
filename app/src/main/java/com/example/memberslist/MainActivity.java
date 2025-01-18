@@ -154,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
             userViewModel.setEditUserDialog(null);
             addUserDetailsDialog.dismiss();
             photoUri = null;
+            dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
         });
 
         // Handle DOB selection
@@ -221,8 +222,19 @@ public class MainActivity extends AppCompatActivity {
 
             String age = calculateAge(dob);
             String photoPath = (photoUri != null && !photoUri.toString().startsWith("android.resource://")) ? photoUri.toString() : getDefaultPhoto(gender);
+            String phoneNumber = Objects.requireNonNull(dialogAddUserBinding.editTextPhoneNo.getText()).toString();
+
+            if (!phoneNumber.isEmpty() && !phoneNumber.matches("\\d{10}")) {
+                dialogAddUserBinding.textInputLayoutPhoneNo.setError("Phone number should must be 10 digits and only numbers are allowed.");
+                return;
+            }
+            if (!phoneNumber.isEmpty() && phoneNumber.length() != 10) {
+                dialogAddUserBinding.textInputLayoutPhoneNo.setError("Phone number length should be 10 digits");
+                return;
+            }
+
             if (editUser == null) {
-                User user = new User(userName, gender, dob, photoPath, age);
+                User user = new User(userName, gender, dob, photoPath, age, phoneNumber);
                 userViewModel.insert(user);
             } else {
                 editUser.setName(userName);
@@ -230,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
                 editUser.setAge(age);
                 editUser.setDob(dob);
                 editUser.setPhotoUri(photoPath);
+                editUser.setPhoneNumber(phoneNumber);
                 userViewModel.update(editUser);
                 editUserDetailsDialog.dismiss();
             }
@@ -237,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
             userViewModel.setIsAddUserDialogVisible(false);
             userViewModel.setEditUserDialog(null);
             photoUri = null;
+            dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
         });
 
         //Below code is for selection of users and checkbox.
@@ -512,6 +526,7 @@ public class MainActivity extends AppCompatActivity {
                 .circleCrop()
                 .into(dialogAddUserBinding.imageViewPhoto);
         dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+        dialogAddUserBinding.editTextPhoneNo.setText(editUser.getPhoneNumber());
     }
 
     private void emptyUserDialog() {
@@ -521,6 +536,8 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.spinnerGender.setSelection(0);
         dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
         dialogAddUserBinding.editTextUserName.setError(null);
+        dialogAddUserBinding.editTextPhoneNo.setText("");
+        dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
     }
 
     private void searchUsers(String query) {

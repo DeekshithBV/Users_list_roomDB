@@ -6,13 +6,14 @@ import androidx.room.PrimaryKey;
 public class User {
     @PrimaryKey(autoGenerate = true)
     private int id;
-    private String name, gender, dob, photoUri, age;
-    public User(String name, String gender, String dob, String photoUri, String age) {
+    private String name, gender, dob, photoUri, age, phoneNumber;
+    public User(String name, String gender, String dob, String photoUri, String age, String phoneNumber) {
         this.name = name;
         this.gender = gender;
         this.dob = dob;
         this.photoUri = photoUri;
         this.age = age;
+        this.phoneNumber = phoneNumber;
     }
     public int getId() {
         return id;
@@ -49,5 +50,11 @@ public class User {
     }
     public void setAge(String age) {
         this.age = age;
+    }
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 }

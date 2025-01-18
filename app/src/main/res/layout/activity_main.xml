@@ -83,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/members" />
+                app:layout_constraintTop_toBottomOf="@id/searchEditText" />
 
             <TextView
                 android:id="@+id/select_all"
