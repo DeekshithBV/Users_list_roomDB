@@ -188,50 +188,24 @@ public class MainActivity extends AppCompatActivity {
 
         // Add user
         dialogAddUserBinding.buttonAdd.setOnClickListener(v -> {
+            boolean isValidUserName, isValidUserDOB, isValidUserPhoneNo;
             String userName = dialogAddUserBinding.editTextUserName.getText().toString().trim();
-
-            String getGenderTextFromSpinner = dialogAddUserBinding.spinnerGender.getSelectedItem().toString();
-            String gender;
-            if (getGenderTextFromSpinner.equalsIgnoreCase("Male")){
-                gender = "(M)";
-            } else if (getGenderTextFromSpinner.equalsIgnoreCase("Female")) {
-                gender = "(F)";
-            } else {
-                gender = "(U)";
-            }
             String dob = Objects.requireNonNull(dialogAddUserBinding.DateOfBirth.getText()).toString();
-
-            if (userName.isEmpty()) {
-                dialogAddUserBinding.editTextUserName.setError("Please enter user name!");
-                return;
-            } else if (!userName.matches("^[a-zA-Z0-9 ]+$")) {
-                dialogAddUserBinding.editTextUserName.setError("User name should contain only letters, numbers and spaces!");
-                return;
-            } else if (userName.length() > 14) {
-                dialogAddUserBinding.editTextUserName.setError("User name should be less than or equal to 14 characters!");
-                return;
-            }
-
-            if (dob.isEmpty()) {
-                dialogAddUserBinding.textInputLayoutDOB.setError("Please select DOB!");
-                dialogAddUserBinding.DateOfBirth.setHintTextColor(getResources().getColor(R.color.black, null));
-                return;
-            } /*else {
-                dialogAddUserBinding.DateOfBirth.setHint("Select DOB");
-            }*/
-
-            String age = calculateAge(dob);
-            String photoPath = (photoUri != null && !photoUri.toString().startsWith("android.resource://")) ? photoUri.toString() : getDefaultPhoto(gender);
+            String getGenderTextFromSpinner = dialogAddUserBinding.spinnerGender.getSelectedItem().toString();
             String phoneNumber = Objects.requireNonNull(dialogAddUserBinding.editTextPhoneNo.getText()).toString();
 
-            if (!phoneNumber.isEmpty() && !phoneNumber.matches("\\d{10}")) {
-                dialogAddUserBinding.textInputLayoutPhoneNo.setError("Phone number should must be 10 digits and only numbers are allowed.");
-                return;
-            }
-            if (!phoneNumber.isEmpty() && phoneNumber.length() != 10) {
-                dialogAddUserBinding.textInputLayoutPhoneNo.setError("Phone number length should be 10 digits");
-                return;
-            }
+            String age = calculateAge(dob);
+            String gender = getGenderText(getGenderTextFromSpinner);
+            String photoPath = (photoUri != null && !photoUri.toString().startsWith("android.resource://")) ? photoUri.toString() : getDefaultPhoto(gender);
+
+            isValidUserName = checkUserNameValidation(userName);
+            if (!isValidUserName) return;
+
+            isValidUserDOB = checkUserDOBValidation(dob);
+            if (!isValidUserDOB) return;
+
+            isValidUserPhoneNo = checkUserPhoneNoValidation(phoneNumber);
+            if (!isValidUserPhoneNo) return;
 
             if (editUser == null) {
                 User user = new User(userName, gender, dob, photoPath, age, phoneNumber);
@@ -558,6 +532,54 @@ public class MainActivity extends AppCompatActivity {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         if (inputMethodManager != null) {
             inputMethodManager.hideSoftInputFromWindow(mBinding.searchEditText.getWindowToken(), 0);
+        }
+    }
+
+    private boolean checkUserNameValidation(@NonNull String userName) {
+        if (userName.isEmpty()) {
+            dialogAddUserBinding.editTextUserName.setError("Please enter user name!");
+            return false;
+        } else if (!userName.matches("^[a-zA-Z0-9 ]+$")) {
+            dialogAddUserBinding.editTextUserName.setError("User name should contain only letters, numbers and spaces!");
+            return false;
+        } else if (userName.length() > 14) {
+            dialogAddUserBinding.editTextUserName.setError("User name should be less than or equal to 14 characters!");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean checkUserDOBValidation(@NonNull String dob) {
+        if (dob.isEmpty()) {
+            dialogAddUserBinding.textInputLayoutDOB.setError("Please select DOB!");
+            dialogAddUserBinding.DateOfBirth.setHintTextColor(getResources().getColor(R.color.black, null));
+            return false;
+        } /*else {
+                dialogAddUserBinding.DateOfBirth.setHint("Select DOB");
+            }*/
+        else return true;
+    }
+
+    private boolean checkUserPhoneNoValidation(@NonNull String phoneNumber) {
+        if (!phoneNumber.isEmpty() && !phoneNumber.matches("\\d{10}")) {
+            dialogAddUserBinding.textInputLayoutPhoneNo.setError("Phone number should must be 10 digits and only numbers are allowed.");
+            return false;
+        }
+        else if (!phoneNumber.isEmpty() && phoneNumber.length() != 10) {
+            dialogAddUserBinding.textInputLayoutPhoneNo.setError("Phone number length should be 10 digits");
+            return false;
+        } else return true;
+    }
+
+    @NonNull
+    private String getGenderText(@NonNull String getGenderTextFromSpinner) {
+        if (getGenderTextFromSpinner.equalsIgnoreCase("Male")){
+            return  "(M)";
+        } else if (getGenderTextFromSpinner.equalsIgnoreCase("Female")) {
+            return "(F)";
+        } else {
+            return "(U)";
         }
     }
 }
