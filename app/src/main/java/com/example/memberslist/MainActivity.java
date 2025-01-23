@@ -3,8 +3,10 @@ package com.example.memberslist;
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -14,7 +16,10 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -39,6 +44,7 @@ import com.example.memberslist.databinding.ActivityMainBinding;
 import com.example.memberslist.databinding.DialogAddUserBinding;
 import com.example.memberslist.models.UserViewModel;
 import com.google.android.material.snackbar.Snackbar;
+import com.hbb20.CountryCodePicker;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -120,7 +126,12 @@ public class MainActivity extends AppCompatActivity {
 
         userAdapter.getUserProfileDialog().setOnDismissListener(dialog -> userViewModel.setUserProfileDialog(null));
 
-        userAdapter.getUserDetailsDialog().setOnDismissListener(dialog -> userViewModel.setUserDetailsDialog(null));
+        userAdapter.getUserDetailsDialog().setOnDismissListener(dialog -> {
+            userViewModel.setUserDetailsDialog(null);
+
+            //If i add the below line one issue solves another opens.
+            //userViewModel.setEditUserDialog(null);
+        });
 
         userAdapter.setDeleteClickListener(user -> {
             //deleteOldDialog does not automatically become null when the dialog is dismissed.
@@ -313,6 +324,36 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        addUserDetailsDialog.setOnDismissListener(dialog -> {
+            dialogAddUserBinding.editTextUserName.setCursorVisible(false);
+            dialogAddUserBinding.editTextPhoneNo.setCursorVisible(false);
+        });
+
+        dialogAddUserBinding.countryCodePicker.setDialogEventsListener(new CountryCodePicker.DialogEventsListener() {
+            @Override
+            public void onCcpDialogOpen(Dialog dialog) {
+                Window window = dialog.getWindow();
+                if (window != null) {
+                    WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+                    layoutParams.width = (int) (Resources.getSystem().getDisplayMetrics().widthPixels * .86);
+                    window.setBackgroundDrawableResource(R.drawable.rounded_corner);
+                    layoutParams.height = calculateCustomHeight();
+                    layoutParams.gravity = Gravity.BOTTOM;
+                    window.setAttributes(layoutParams);
+                }
+            }
+
+            @Override
+            public void onCcpDialogDismiss(DialogInterface dialogInterface) {
+
+            }
+
+            @Override
+            public void onCcpDialogCancel(DialogInterface dialogInterface) {
+
+            }
+        });
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -389,6 +430,8 @@ public class MainActivity extends AppCompatActivity {
         }
         addUserDetailsDialog.show();
         userViewModel.setIsAddUserDialogVisible(true);
+        setCursorVisibilityForEditTextUserName();
+        setCursorVisibilityForEditTextPhoneNumber();
     }
 
     private int getIndexBasedOnGenderSelected(@NonNull String gender) {
@@ -463,6 +506,8 @@ public class MainActivity extends AppCompatActivity {
 
     @androidx.annotation.Nullable
     private File createImageFile(){
+        //Provide app specific directory for storing pictures in external storage.
+        // --> /storage/emulated/0/Android/data/com.example.memberslist/files/Pictures. (path where images are stored).
         File storageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),"");
         if (!storageDir.exists()){
             storageDir.mkdirs();
@@ -581,5 +626,24 @@ public class MainActivity extends AppCompatActivity {
         } else {
             return "(U)";
         }
+    }
+
+    private void setCursorVisibilityForEditTextUserName() {
+        dialogAddUserBinding.editTextUserName.setOnFocusChangeListener((v, hasFocus) -> {
+            dialogAddUserBinding.editTextUserName.setCursorVisible(hasFocus);
+        });
+    }
+
+    private void setCursorVisibilityForEditTextPhoneNumber() {
+        dialogAddUserBinding.editTextPhoneNo.setOnFocusChangeListener((v, hasFocus) -> {
+            dialogAddUserBinding.editTextPhoneNo.setCursorVisible(hasFocus);
+        });
+    }
+
+    private int calculateCustomHeight() {
+        int[] location = new int[2];
+        dialogAddUserBinding.countryCodePicker.getLocationOnScreen(location);
+        int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+        return screenHeight - (location[1] + dialogAddUserBinding.textInputLayoutPhoneNo.getHeight());
     }
 }
