@@ -21,8 +21,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -50,6 +50,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private User editUser, deleteUser;
     private ImageView editIcon;
     RecyclerView recyclerView;
+    private String getGenderTextFromClick = "";
     UserAdapter userAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,11 +205,12 @@ public class MainActivity extends AppCompatActivity {
             boolean isValidUserName, isValidUserDOB, isValidUserPhoneNo;
             String userName = dialogAddUserBinding.editTextUserName.getText().toString().trim();
             String dob = Objects.requireNonNull(dialogAddUserBinding.DateOfBirth.getText()).toString();
-            String getGenderTextFromSpinner = dialogAddUserBinding.spinnerGender.getSelectedItem().toString();
+            //String getGenderTextFromSpinner = dialogAddUserBinding.spinnerGender.getSelectedItem().toString();
             String phoneNumber = Objects.requireNonNull(dialogAddUserBinding.editTextPhoneNo.getText()).toString();
+            String countryCode = dialogAddUserBinding.countryCodePicker.getSelectedCountryCodeWithPlus();
 
             String age = calculateAge(dob);
-            String gender = getGenderText(getGenderTextFromSpinner);
+            String gender = getGenderText(getGenderTextFromClick);
             String photoPath = (photoUri != null && !photoUri.toString().startsWith("android.resource://")) ? photoUri.toString() : getDefaultPhoto(gender);
 
             isValidUserName = checkUserNameValidation(userName);
@@ -219,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
             if (!isValidUserPhoneNo) return;
 
             if (editUser == null) {
-                User user = new User(userName, gender, dob, photoPath, age, phoneNumber);
+                User user = new User(userName, gender, dob, photoPath, age, phoneNumber, countryCode);
                 userViewModel.insert(user);
             } else {
                 editUser.setName(userName);
@@ -228,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 editUser.setDob(dob);
                 editUser.setPhotoUri(photoPath);
                 editUser.setPhoneNumber(phoneNumber);
+                editUser.setCountryCode(countryCode);
                 userViewModel.update(editUser);
                 editUserDetailsDialog.dismiss();
             }
@@ -330,30 +335,8 @@ public class MainActivity extends AppCompatActivity {
             dialogAddUserBinding.editTextPhoneNo.setCursorVisible(false);
         });
 
-        dialogAddUserBinding.countryCodePicker.setDialogEventsListener(new CountryCodePicker.DialogEventsListener() {
-            @Override
-            public void onCcpDialogOpen(Dialog dialog) {
-                Window window = dialog.getWindow();
-                if (window != null) {
-                    WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-                    layoutParams.width = (int) (Resources.getSystem().getDisplayMetrics().widthPixels * .86);
-                    window.setBackgroundDrawableResource(R.drawable.rounded_corner);
-                    layoutParams.height = calculateCustomHeight();
-                    layoutParams.gravity = Gravity.BOTTOM;
-                    window.setAttributes(layoutParams);
-                }
-            }
-
-            @Override
-            public void onCcpDialogDismiss(DialogInterface dialogInterface) {
-
-            }
-
-            @Override
-            public void onCcpDialogCancel(DialogInterface dialogInterface) {
-
-            }
-        });
+        countryCodeSelection();
+        genderSelection();
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -395,10 +378,10 @@ public class MainActivity extends AppCompatActivity {
         //Objects.requireNonNull(addUserDetailsDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         // Set up gender spinner
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+        /*ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.gender_array, R.layout.single_textview);
         adapter.setDropDownViewResource(R.layout.single_textview);
-        dialogAddUserBinding.spinnerGender.setAdapter(adapter);
+        dialogAddUserBinding.spinnerGender.setAdapter(adapter);*/
     }
 
     public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog, ImageView editIcon) {
@@ -434,12 +417,21 @@ public class MainActivity extends AppCompatActivity {
         setCursorVisibilityForEditTextPhoneNumber();
     }
 
-    private int getIndexBasedOnGenderSelected(@NonNull String gender) {
+    @NonNull
+    private String getStringBasedOnGenderSelected(@NonNull String gender) {
         if (gender.equalsIgnoreCase("(m)"))
-            return 0;
+            return getResources().getString(R.string.male);
         else if (gender.equalsIgnoreCase("(f)"))
-            return 1;
-        else return 2;
+            return getResources().getString(R.string.female);
+        else if (gender.equalsIgnoreCase("(t)"))
+            return getResources().getString(R.string.transgender);
+        else if (gender.equalsIgnoreCase("(i)"))
+            return getResources().getString(R.string.intersex);
+        else if (gender.equalsIgnoreCase("(nb)"))
+            return getResources().getString(R.string.non_Binary);
+        else if (gender.equalsIgnoreCase("(np)"))
+            return getResources().getString(R.string.not_preferred);
+        else return getResources().getString(R.string.others);
     }
 
     @androidx.annotation.Nullable
@@ -474,13 +466,19 @@ public class MainActivity extends AppCompatActivity {
 
     @NonNull
     private String getDefaultPhoto(String gender) {
-        if ("(M)".equalsIgnoreCase(gender)) {
+        if ("(M)".equalsIgnoreCase(gender))
             return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.male_gender).toString();
-        } else if ("(F)".equalsIgnoreCase(gender)) {
+        else if ("(F)".equalsIgnoreCase(gender))
             return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.female_gender).toString();
-        } else {
-            return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.unknown_gender).toString();
-        }
+        else if ("(T)".equalsIgnoreCase(gender))
+            return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.transgender_icon).toString();
+        else if ("(I)".equalsIgnoreCase(gender))
+            return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.intersex_icon).toString();
+        else if ("(NB)".equalsIgnoreCase(gender))
+            return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.non_binary).toString();
+        else if ("(NP)".equalsIgnoreCase(gender))
+            return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.no_gender_prefer_icon).toString();
+        else return Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.others_icon).toString();
     }
 
     private void requestCameraPermission() {
@@ -544,19 +542,23 @@ public class MainActivity extends AppCompatActivity {
                 .load(photoUri)
                 .circleCrop()
                 .into(dialogAddUserBinding.imageViewPhoto);
-        dialogAddUserBinding.spinnerGender.setSelection(getIndexBasedOnGenderSelected(editUser.getGender()));
+        //dialogAddUserBinding.spinnerGender.setSelection(getStringBasedOnGenderSelected(editUser.getGender()));
+        getGenderTextFromClick = getStringBasedOnGenderSelected(editUser.getGender());
         dialogAddUserBinding.editTextPhoneNo.setText(editUser.getPhoneNumber());
+        dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(Integer.parseInt(editUser.getCountryCode()));
     }
 
     private void emptyUserDialog() {
         dialogAddUserBinding.editTextUserName.setText("");
         dialogAddUserBinding.DateOfBirth.setText("");
         dialogAddUserBinding.imageViewPhoto.setImageResource(R.drawable.empty_user_circle_icon);
-        dialogAddUserBinding.spinnerGender.setSelection(0);
+        //dialogAddUserBinding.spinnerGender.setSelection(0);
+        getGenderTextFromClick = getResources().getString(R.string.male);
         dialogAddUserBinding.textInputLayoutDOB.setErrorEnabled(false);
         dialogAddUserBinding.editTextUserName.setError(null);
         dialogAddUserBinding.editTextPhoneNo.setText("");
         dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
+        dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(+91);
     }
 
     private void searchUsers(String query) {
@@ -618,14 +620,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private String getGenderText(@NonNull String getGenderTextFromSpinner) {
-        if (getGenderTextFromSpinner.equalsIgnoreCase("Male")){
-            return  "(M)";
-        } else if (getGenderTextFromSpinner.equalsIgnoreCase("Female")) {
+    private String getGenderText(@NonNull String getGenderTextFromClick) {
+        if (getGenderTextFromClick.equalsIgnoreCase(getResources().getString(R.string.male)))
+            return "(M)";
+        else if (getGenderTextFromClick.equalsIgnoreCase(getResources().getString(R.string.female)))
             return "(F)";
-        } else {
-            return "(U)";
-        }
+        else if (getGenderTextFromClick.equalsIgnoreCase(getResources().getString(R.string.transgender)))
+            return "(T)";
+        else if (getGenderTextFromClick.equalsIgnoreCase(getResources().getString(R.string.intersex)))
+            return "(I)";
+        else if (getGenderTextFromClick.equalsIgnoreCase(getResources().getString(R.string.non_Binary)))
+            return "(NB)";
+        else if (getGenderTextFromClick.equalsIgnoreCase(getResources().getString(R.string.not_preferred)))
+            return "(NP)";
+        else return "(O)";
     }
 
     private void setCursorVisibilityForEditTextUserName() {
@@ -645,5 +653,78 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.countryCodePicker.getLocationOnScreen(location);
         int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
         return screenHeight - (location[1] + dialogAddUserBinding.textInputLayoutPhoneNo.getHeight());
+    }
+
+    private void countryCodeSelection() {
+        dialogAddUserBinding.countryCodePicker.setDialogEventsListener(new CountryCodePicker.DialogEventsListener() {
+            @Override
+            public void onCcpDialogOpen(Dialog dialog) {
+                Window window = dialog.getWindow();
+                if (window != null) {
+                    WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+                    layoutParams.width = (int) (Resources.getSystem().getDisplayMetrics().widthPixels * .86);
+                    window.setBackgroundDrawableResource(R.drawable.rounded_corner);
+                    layoutParams.height = calculateCustomHeight();
+                    layoutParams.gravity = Gravity.BOTTOM;
+                    window.setAttributes(layoutParams);
+                }
+            }
+
+            @Override
+            public void onCcpDialogDismiss(DialogInterface dialogInterface) {
+
+            }
+
+            @Override
+            public void onCcpDialogCancel(DialogInterface dialogInterface) {
+
+            }
+        });
+    }
+    private void genderSelection() {
+        dialogAddUserBinding.btnMoreOptions.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(this, v);
+            popupMenu.getMenuInflater().inflate(R.menu.gender_options_menu, popupMenu.getMenu());
+
+            try {
+                Field menuHelperField = PopupMenu.class.getDeclaredField("mPopup");
+                menuHelperField.setAccessible(true);
+                Object menuHelper = menuHelperField.get(popupMenu);
+                if (menuHelper != null) {
+                    Method setForceIcons = menuHelper.getClass().getDeclaredMethod("setForceShowIcon", boolean.class);
+                    setForceIcons.invoke(menuHelper, true);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.option_transgender) {
+                    getGenderTextFromClick = getResources().getString(R.string.transgender);
+                }
+                else if (item.getItemId() == R.id.option_intersex) {
+                    getGenderTextFromClick = getResources().getString(R.string.intersex);
+                }
+                else if (item.getItemId() == R.id.option_non_binary) {
+                    getGenderTextFromClick = getResources().getString(R.string.non_Binary);
+                }
+                else if (item.getItemId() == R.id.option_prefer_not_to_say) {
+                    getGenderTextFromClick = getResources().getString(R.string.not_preferred);
+                }
+                else {
+                    getGenderTextFromClick = getResources().getString(R.string.others);
+                }
+                return true;
+            });
+            popupMenu.show();
+        });
+
+        dialogAddUserBinding.btnFemale.setOnClickListener(v -> {
+            getGenderTextFromClick = dialogAddUserBinding.btnFemale.getText().toString();
+        });
+
+        dialogAddUserBinding.btnMale.setOnClickListener(v -> {
+            getGenderTextFromClick = dialogAddUserBinding.btnMale.getText().toString();
+        });
     }
 }

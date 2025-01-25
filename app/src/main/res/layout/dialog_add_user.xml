@@ -53,7 +53,53 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/editTextUserName" />
 
-        <Spinner
+        <LinearLayout
+            android:id="@+id/genderLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/Gender">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMale"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:drawableTop="@drawable/male_icon"
+                android:padding="8dp"
+                android:text="@string/male"
+                android:textAllCaps="false"
+                android:textColor="@color/black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFemale"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:drawableTop="@drawable/female_icon"
+                android:padding="8dp"
+                android:text="@string/female"
+                android:textAllCaps="false"
+                android:textColor="@color/black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMoreOptions"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:drawableTop="@drawable/question_gender"
+                android:padding="8dp"
+                android:text="@string/more_opt"
+                android:textAllCaps="false"
+                android:textColor="@color/black" />
+
+        </LinearLayout>
+        <!--<Spinner
             android:id="@+id/spinnerGender"
             android:layout_width="140dp"
             android:layout_height="36dp"
@@ -65,7 +111,7 @@
             android:popupTheme="@style/SpinnerPopupStyle"
             app:layout_constraintBottom_toBottomOf="@id/Gender"
             app:layout_constraintStart_toEndOf="@id/Gender"
-            app:layout_constraintTop_toTopOf="@id/Gender" />
+            app:layout_constraintTop_toTopOf="@id/Gender" />-->
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutDOB"
@@ -74,7 +120,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/spinnerGender">
+            app:layout_constraintTop_toBottomOf="@id/genderLinearLayout">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/DateOfBirth"
@@ -143,7 +189,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- android:background="@android:drawable/edit_text" -->
         <Button
             android:id="@+id/buttonAddPhoto"
             android:layout_width="wrap_content"

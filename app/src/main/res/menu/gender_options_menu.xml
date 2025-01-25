@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/option_transgender"
+        android:title="@string/transgender"
+        android:icon="@drawable/transgender_icon"/>
+    <item
+        android:id="@+id/option_intersex"
+        android:title="@string/intersex"
+        android:icon="@drawable/intersex_icon"/>
+    <item
+        android:id="@+id/option_non_binary"
+        android:title="@string/non_Binary"
+        android:icon="@drawable/non_binary"/>
+    <item
+        android:id="@+id/option_prefer_not_to_say"
+        android:title="@string/not_preferred"
+        android:icon="@drawable/no_gender_prefer_icon"/>
+    <item
+        android:id="@+id/option_others"
+        android:title="@string/others"
+        android:icon="@drawable/others_icon"/>
+</menu>

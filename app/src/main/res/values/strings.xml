@@ -26,4 +26,10 @@
     <string name="search_name">Search users by name</string>
     <string name="phone_no">Phone Number (optional)</string>
     <string name="hint_phone_no">Enter phone no</string>
+    <string name="more_opt">More Options</string>
+    <string name="transgender">Transgender</string>
+    <string name="intersex">Intersex</string>
+    <string name="non_Binary">Non Binary</string>
+    <string name="not_preferred">Prefer not to say</string>
+    <string name="others">Others</string>
 </resources>
