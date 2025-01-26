@@ -1,234 +1,245 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/details"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="@string/user_details"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/person"
+        <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:paddingTop="20dp"
-            android:text="@string/person_name"
-            android:textSize="20sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/details" />
+            android:padding="10dp">
 
-        <EditText
-            android:id="@+id/editTextUserName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:hint="@string/hint_name"
-            android:inputType="textPersonName"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/person" />
-
-        <TextView
-            android:id="@+id/Gender"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="@string/gender"
-            android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editTextUserName" />
-
-        <LinearLayout
-            android:id="@+id/genderLinearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/Gender">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMale"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            <TextView
+                android:id="@+id/details"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:drawableTop="@drawable/male_icon"
-                android:padding="8dp"
-                android:text="@string/male"
-                android:textAllCaps="false"
-                android:textColor="@color/black" />
+                android:text="@string/user_details"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnFemale"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:drawableTop="@drawable/female_icon"
-                android:padding="8dp"
-                android:text="@string/female"
-                android:textAllCaps="false"
-                android:textColor="@color/black" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMoreOptions"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:drawableTop="@drawable/question_gender"
-                android:padding="8dp"
-                android:text="@string/more_opt"
-                android:textAllCaps="false"
-                android:textColor="@color/black" />
-
-        </LinearLayout>
-        <!--<Spinner
-            android:id="@+id/spinnerGender"
-            android:layout_width="140dp"
-            android:layout_height="36dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/spinner_border"
-            android:entries="@array/gender_array"
-            android:paddingStart="8dp"
-            android:paddingEnd="0dp"
-            android:popupTheme="@style/SpinnerPopupStyle"
-            app:layout_constraintBottom_toBottomOf="@id/Gender"
-            app:layout_constraintStart_toEndOf="@id/Gender"
-            app:layout_constraintTop_toTopOf="@id/Gender" />-->
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutDOB"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/genderLinearLayout">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/DateOfBirth"
+            <TextView
+                android:id="@+id/person"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:hint="@string/dob"
-                android:inputType="date"
-                android:padding="12dp"
-                android:textSize="20sp" />
+                android:layout_margin="10dp"
+                android:paddingTop="20dp"
+                android:text="@string/person_name"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/details" />
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/phone_no"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="@string/phone_no"
-            android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textInputLayoutDOB" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutPhoneNo"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/phone_no">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <EditText
+                android:id="@+id/editTextUserName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/spinner_border"
-                android:paddingHorizontal="5dp">
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:hint="@string/hint_name"
+                android:inputType="textPersonName"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/person" />
 
-                <com.hbb20.CountryCodePicker
-                    android:id="@+id/countryCodePicker"
+            <TextView
+                android:id="@+id/Gender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/gender"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/editTextUserName" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/genderLinearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/Gender"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMale"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:ccp_defaultNameCode="IN"
-                    app:ccp_showFlag="true"
-                    app:ccp_showFullName="false"
-                    app:ccp_showNameCode="false"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:drawableTop="@drawable/male_icon"
+                    android:insetLeft="5dp"
+                    android:insetRight="5dp"
+                    android:padding="8dp"
+                    android:text="@string/male"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:strokeWidth="2dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFemale"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/female_icon"
+                    android:insetLeft="5dp"
+                    android:insetRight="5dp"
+                    android:padding="8dp"
+                    android:text="@string/female"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:strokeWidth="2dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMoreOptions"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/question_gender"
+                    android:insetLeft="5dp"
+                    android:insetRight="5dp"
+                    android:padding="8dp"
+                    android:text="@string/more_opt"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    app:strokeWidth="2dp" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <!--<Spinner
+                android:id="@+id/spinnerGender"
+                android:layout_width="140dp"
+                android:layout_height="36dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/spinner_border"
+                android:entries="@array/gender_array"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
+                android:popupTheme="@style/SpinnerPopupStyle"
+                app:layout_constraintBottom_toBottomOf="@id/Gender"
+                app:layout_constraintStart_toEndOf="@id/Gender"
+                app:layout_constraintTop_toTopOf="@id/Gender" />-->
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutDOB"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/genderLinearLayout">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextPhoneNo"
-                    android:layout_width="0dp"
+                    android:id="@+id/DateOfBirth"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/hint_phone_no"
-                    android:inputType="phone"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:hint="@string/dob"
+                    android:inputType="date"
                     android:padding="12dp"
-                    android:textSize="20sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/countryCodePicker"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="20sp" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/phone_no"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/phone_no"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textInputLayoutDOB" />
 
-        <Button
-            android:id="@+id/buttonAddPhoto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:backgroundTint="@color/sky_blue"
-            android:text="@string/photo"
-            app:layout_constraintBottom_toBottomOf="@id/imageViewPhoto"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/imageViewPhoto" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutPhoneNo"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/phone_no">
 
-        <ImageView
-            android:id="@+id/imageViewPhoto"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/empty_user_circle_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textInputLayoutPhoneNo" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/spinner_border"
+                    android:paddingHorizontal="5dp">
 
-        <Button
-            android:id="@+id/buttonCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:backgroundTint="@color/red"
-            android:text="@string/Cancel"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imageViewPhoto" />
+                    <com.hbb20.CountryCodePicker
+                        android:id="@+id/countryCodePicker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:ccp_defaultNameCode="IN"
+                        app:ccp_showFlag="true"
+                        app:ccp_showFullName="false"
+                        app:ccp_showNameCode="false"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/buttonAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:backgroundTint="@color/blue"
-            android:text="@string/Add"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imageViewPhoto" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextPhoneNo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_phone_no"
+                        android:inputType="phone"
+                        android:padding="12dp"
+                        android:textSize="20sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/countryCodePicker"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/buttonAddPhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:backgroundTint="@color/sky_blue"
+                android:text="@string/photo"
+                app:layout_constraintBottom_toBottomOf="@id/imageViewPhoto"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/imageViewPhoto" />
+
+            <ImageView
+                android:id="@+id/imageViewPhoto"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/empty_user_circle_icon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textInputLayoutPhoneNo" />
+
+            <Button
+                android:id="@+id/buttonCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:backgroundTint="@color/red"
+                android:text="@string/Cancel"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imageViewPhoto" />
+
+            <Button
+                android:id="@+id/buttonAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imageViewPhoto" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 </layout>

@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     private String getGenderTextFromClick = "";
     UserAdapter userAdapter;
+    ColorStateList blueColor, greenColor;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -382,6 +384,8 @@ public class MainActivity extends AppCompatActivity {
                 R.array.gender_array, R.layout.single_textview);
         adapter.setDropDownViewResource(R.layout.single_textview);
         dialogAddUserBinding.spinnerGender.setAdapter(adapter);*/
+        blueColor = ColorStateList.valueOf(getResources().getColor(R.color.blue, null));
+        greenColor = ColorStateList.valueOf(getResources().getColor(R.color.green, null));
     }
 
     public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog, ImageView editIcon) {
@@ -546,6 +550,8 @@ public class MainActivity extends AppCompatActivity {
         getGenderTextFromClick = getStringBasedOnGenderSelected(editUser.getGender());
         dialogAddUserBinding.editTextPhoneNo.setText(editUser.getPhoneNumber());
         dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(Integer.parseInt(editUser.getCountryCode()));
+        dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.update));
+        dialogAddUserBinding.buttonAdd.setBackgroundTintList(greenColor);
     }
 
     private void emptyUserDialog() {
@@ -559,6 +565,8 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.editTextPhoneNo.setText("");
         dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
         dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(+91);
+        dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
+        dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);
     }
 
     private void searchUsers(String query) {

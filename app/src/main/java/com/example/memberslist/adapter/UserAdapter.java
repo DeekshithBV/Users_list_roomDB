@@ -81,6 +81,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             window.setLayout(params.width, params.height);
             window.setBackgroundDrawableResource(R.drawable.rounded_corner);
         }
+
+        if (userViewModel.getUserDetailsDialog().getValue() != null) {
+            showUserDetailsLayout(userViewModel.getUserDetailsDialog().getValue());
+        }
     }
 
     public void setDeleteClickListener(OnDeleteClickListener onDeleteClickListener) {
