@@ -3,6 +3,9 @@
 
     <data>
         <import type="android.view.View" />
+        <variable
+            name="userViewModel"
+            type="com.example.memberslist.models.UserViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -67,7 +70,7 @@
                 android:id="@+id/noUsersTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No users found"
+                android:text="@string/no_users"
                 android:visibility="gone"
                 android:layout_gravity="center"
                 app:layout_constraintStart_toStartOf="parent"
@@ -82,6 +85,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
+                android:text="@string/select_all"
+                android:textSize="22sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/searchEditText" />
 
@@ -90,11 +95,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="@string/select_all"
                 android:textSize="22sp"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="@id/checkbox"
-                app:layout_constraintStart_toEndOf="@id/checkbox"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/checkbox" />
 
 
@@ -106,7 +110,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/checkbox" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
+            <com.example.memberslist.MovableFloatingActionButton
                 android:id="@+id/add_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

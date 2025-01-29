@@ -99,7 +99,12 @@ public class MainActivity extends AppCompatActivity {
 
         userViewModel.getIsAddUserDialogVisible().observe(this, visible -> {
             if (visible) {
+                //For edit user also these below 2 lines will execute.
+                /*dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
+                dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);*/
                 addUserDetailsDialog.show();
+                //Below line not leads to window leak crash.
+                //showUserDetailsDialog(null, null, null);
             }
         });
 
@@ -262,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
                     mBinding.checkbox.setVisibility(View.GONE);
                     mBinding.selectAll.setVisibility(View.GONE);
                 }
+                userViewModel.selectedUserCount.setValue(String.valueOf(userAdapter.getSelectedUsers().size()));
                 userAdapter.notifyDataSetChanged();
             });
         });
@@ -278,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
                 mBinding.checkbox.setVisibility(View.GONE);
                 mBinding.selectAll.setVisibility(View.GONE);
             }
+            userViewModel.selectedUserCount.setValue(String.valueOf(userAdapter.getSelectedUsers().size()));
         });
 
         mBinding.searchEditText.addTextChangedListener(new TextWatcher(){
@@ -339,6 +346,8 @@ public class MainActivity extends AppCompatActivity {
 
         countryCodeSelection();
         genderSelection();
+
+        userViewModel.selectedUserCount.observe(this, s -> mBinding.selectAll.setText(s));
     }
 
     private void initializeDeleteDialog(@NonNull User user) {

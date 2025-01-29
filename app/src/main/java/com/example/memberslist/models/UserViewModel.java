@@ -22,6 +22,7 @@ public class UserViewModel extends AndroidViewModel {
     private MutableLiveData<User> deleteUserDialog = new MutableLiveData<>();
     private MutableLiveData<User> userProfileDialog = new MutableLiveData<>();
     private MutableLiveData<User> userDetailsDialog = new MutableLiveData<>();
+    public MutableLiveData<String> selectedUserCount = new MutableLiveData<>();
 
     public UserViewModel(@NonNull Application application) {
         super(application);
