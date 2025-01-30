@@ -99,9 +99,8 @@ public class MainActivity extends AppCompatActivity {
 
         userViewModel.getIsAddUserDialogVisible().observe(this, visible -> {
             if (visible) {
-                //For edit user also these below 2 lines will execute.
-                /*dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
-                dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);*/
+                dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
+                dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);
                 addUserDetailsDialog.show();
                 //Below line not leads to window leak crash.
                 //showUserDetailsDialog(null, null, null);
@@ -109,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         userViewModel.getEditUserDialog().observe(this, editUser -> {
-            if (editUser != null && addUserDetailsDialog.isShowing()) {
+            if (editUser != null) {
                 showUserDetailsDialog(editUser, userAdapter.getUserDetailsDialog(), userAdapter.userDetailsLayoutBinding.editUser);
             }
         });
@@ -408,13 +407,6 @@ public class MainActivity extends AppCompatActivity {
         this.editUser = editUser;
         this.editUserDetailsDialog = editUserDetailsDialog;
 
-        //Populate existing user data if edit operation
-        if (editUser != null) {
-            editUserDetails(editUser);
-        } else {
-            emptyUserDialog();
-        }
-
         if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
             return;
         }
@@ -424,8 +416,15 @@ public class MainActivity extends AppCompatActivity {
         if (userAdapter.getUserDetailsDialog() != null && userAdapter.getUserDetailsDialog().isShowing() && editIcon == null) {
             return;
         }
+
+        //Populate existing user data if edit operation
+        if (editUser != null) {
+            editUserDetails(editUser);
+        } else {
+            emptyUserDialog();
+        }
+
         addUserDetailsDialog.show();
-        userViewModel.setIsAddUserDialogVisible(true);
         setCursorVisibilityForEditTextUserName();
         setCursorVisibilityForEditTextPhoneNumber();
     }
@@ -576,6 +575,7 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(+91);
         dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
         dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);
+        userViewModel.setIsAddUserDialogVisible(true);
     }
 
     private void searchUsers(String query) {
