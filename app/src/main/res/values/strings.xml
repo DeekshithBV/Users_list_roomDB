@@ -34,4 +34,7 @@
     <string name="others">Others</string>
     <string name="update">Update</string>
     <string name="no_users">No users found</string>
+    <string name="delete">Delete</string>
+    <string name="delete_all">Delete All</string>
+    <string name="edit">Edit</string>
 </resources>

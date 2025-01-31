@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     private String getGenderTextFromClick = "";
     UserAdapter userAdapter;
-    ColorStateList blueColor, greenColor;
+    ColorStateList blueColor, greenColor, blackColor, greyColor;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(userAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         mBinding.closeIcon.setVisibility(mBinding.searchEditText.getText().toString().isEmpty() ? View.GONE : View.VISIBLE);
+        blackColor = ColorStateList.valueOf(getResources().getColor(R.color.black, null));
+        greyColor = ColorStateList.valueOf(getResources().getColor(R.color.grey, null));
         this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
         if (deleteUser != null) {
             initializeDeleteDialog(deleteUser);
@@ -256,17 +258,14 @@ public class MainActivity extends AppCompatActivity {
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (isChecked) {
                     userAdapter.selectAll();
-                    /*mBinding.checkbox.setVisibility(View.VISIBLE);
-                    mBinding.selectAll.setVisibility(View.VISIBLE);*/
-                } /*else if (!userAdapter.getSelectedUsers().isEmpty()) {
-                    mBinding.checkbox.setVisibility(View.VISIBLE);
-                    mBinding.selectAll.setVisibility(View.VISIBLE);
-                }*/ else {
+                    mBinding.editDeleteIncludeLayout.deleteText.setText(R.string.delete_all);
+                }  else {
                     userAdapter.clearAll();
                     mBinding.checkbox.setVisibility(View.GONE);
                     mBinding.selectAll.setVisibility(View.GONE);
                 }
                 userViewModel.selectedUserCount.setValue(String.valueOf(userAdapter.getSelectedUsers().size()));
+                userViewModel.deleteOrEditLayoutVisibility.setValue(!userAdapter.getSelectedUsers().isEmpty());
                 userAdapter.notifyDataSetChanged();
             });
         });
@@ -284,6 +283,7 @@ public class MainActivity extends AppCompatActivity {
                 mBinding.selectAll.setVisibility(View.GONE);
             }
             userViewModel.selectedUserCount.setValue(String.valueOf(userAdapter.getSelectedUsers().size()));
+            userViewModel.deleteOrEditLayoutVisibility.setValue(!userAdapter.getSelectedUsers().isEmpty());
         });
 
         mBinding.searchEditText.addTextChangedListener(new TextWatcher(){
@@ -346,7 +346,27 @@ public class MainActivity extends AppCompatActivity {
         countryCodeSelection();
         genderSelection();
 
-        userViewModel.selectedUserCount.observe(this, s -> mBinding.selectAll.setText(s));
+        userViewModel.selectedUserCount.observe(this, s -> {
+            mBinding.selectAll.setText(s);
+            int selectedUserCount = Integer.parseInt(s);
+            if (userAdapter.getItemCount() != selectedUserCount) {
+                mBinding.editDeleteIncludeLayout.deleteText.setText(R.string.delete);
+                mBinding.editDeleteIncludeLayout.editText.setText(R.string.edit);
+            } else {
+                mBinding.editDeleteIncludeLayout.deleteText.setText(R.string.delete_all);
+            }
+            mBinding.editDeleteIncludeLayout.edit.setEnabled(selectedUserCount <= 1);
+            mBinding.editDeleteIncludeLayout.editText.setTextColor(selectedUserCount <= 1 ? blackColor : greyColor);
+            mBinding.editDeleteIncludeLayout.edit.setBackgroundResource(selectedUserCount <= 1 ? R.drawable.edit_delete_background : R.drawable.spinner_border);
+            mBinding.editDeleteIncludeLayout.editIcon.setImageTintList(selectedUserCount <= 1 ? blueColor : greyColor);
+        });
+
+        userViewModel.deleteOrEditLayoutVisibility.observe(this, visible -> {
+            mBinding.editDeleteIncludeLayout.editOrDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
+        });
+
+        deleteUsersOnLongPressSelection();
+        editUserOnLongPressSelection();
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -742,6 +762,21 @@ public class MainActivity extends AppCompatActivity {
 
         dialogAddUserBinding.btnMale.setOnClickListener(v -> {
             getGenderTextFromClick = dialogAddUserBinding.btnMale.getText().toString();
+        });
+    }
+
+    private void deleteUsersOnLongPressSelection() {
+        mBinding.editDeleteIncludeLayout.delete.setOnClickListener(v -> {
+            for (User user : userAdapter.getSelectedUsers()) {
+                userViewModel.delete(user);
+            }
+            userAdapter.clearAll();
+        });
+    }
+
+    private void editUserOnLongPressSelection() {
+        mBinding.editDeleteIncludeLayout.edit.setOnClickListener(v -> {
+            showUserDetailsDialog(userAdapter.getSelectedUsers().get(0), userAdapter.getUserDetailsDialog(), userAdapter.userDetailsLayoutBinding.editUser);
         });
     }
 }
