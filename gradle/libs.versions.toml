@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.2"
+biometric = "1.2.0-alpha05"
 ccp = "2.5.2"
 glide = "4.15.1"
 junit = "4.13.2"
@@ -15,6 +16,7 @@ roomCompiler = "2.6.1"
 roomRuntimeVersion = "2.5.1"
 
 [libraries]
+biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 ccp = { module = "com.hbb20:ccp", version.ref = "ccp" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }

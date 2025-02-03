@@ -54,4 +54,7 @@ dependencies {
 
     //For country flag in Phone no field.
     implementation libs.ccp // 'com.hbb20:ccp:2.5.2'
+
+    //For biometric data
+    implementation libs.biometric
 }

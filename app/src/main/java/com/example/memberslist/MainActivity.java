@@ -29,6 +29,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -60,6 +62,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST_CODE = 100;
@@ -76,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
     private String getGenderTextFromClick = "";
     UserAdapter userAdapter;
     ColorStateList blueColor, greenColor, blackColor, greyColor;
+    BiometricPrompt biometricPrompt;
+    BiometricPrompt.PromptInfo promptInfo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -249,6 +254,7 @@ public class MainActivity extends AppCompatActivity {
             userViewModel.setEditUserDialog(null);
             photoUri = null;
             dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
+            userAdapter.clearAll();
         });
 
         //Below code is for selection of users and checkbox.
@@ -358,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
             mBinding.editDeleteIncludeLayout.edit.setEnabled(selectedUserCount <= 1);
             mBinding.editDeleteIncludeLayout.editText.setTextColor(selectedUserCount <= 1 ? blackColor : greyColor);
             mBinding.editDeleteIncludeLayout.edit.setBackgroundResource(selectedUserCount <= 1 ? R.drawable.edit_delete_background : R.drawable.spinner_border);
-            mBinding.editDeleteIncludeLayout.editIcon.setImageTintList(selectedUserCount <= 1 ? blueColor : greyColor);
+            mBinding.editDeleteIncludeLayout.editIcon.setImageTintList(selectedUserCount <= 1 ? blackColor : greyColor);
         });
 
         userViewModel.deleteOrEditLayoutVisibility.observe(this, visible -> {
@@ -367,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
 
         deleteUsersOnLongPressSelection();
         editUserOnLongPressSelection();
+        authenticateUser();
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -778,5 +785,53 @@ public class MainActivity extends AppCompatActivity {
         mBinding.editDeleteIncludeLayout.edit.setOnClickListener(v -> {
             showUserDetailsDialog(userAdapter.getSelectedUsers().get(0), userAdapter.getUserDetailsDialog(), userAdapter.userDetailsLayoutBinding.editUser);
         });
+    }
+
+    private void authenticateUser() {
+        Executor executor = ContextCompat.getMainExecutor(this);
+
+        biometricPrompt = new BiometricPrompt(this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+                if (errorCode == BiometricPrompt.ERROR_CANCELED ||
+                        errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
+                        errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON)
+                    showCustomLockDialog();
+            }
+
+            @Override
+            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+            }
+        });
+
+        promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Biometric Authentication")
+                .setSubtitle("Authenticate to proceed")
+                .setDescription("Use phone screen lock password, PIN or fingerprint to access the members list app.")
+                // commented below line due to crash.
+                //.setNegativeButtonText("Use Password")
+                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                .build();
+        biometricPrompt.authenticate(promptInfo);
+    }
+
+    private void showCustomLockDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Members list is locked");
+        builder.setMessage("Authentication is required to access the app");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Unlock now", (dialog, which) -> {
+            biometricPrompt.authenticate(promptInfo);
+        });
+        AlertDialog lockDialog = builder.create();
+        Objects.requireNonNull(lockDialog.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corner);
+        lockDialog.show();
     }
 }
