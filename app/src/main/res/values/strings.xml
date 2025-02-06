@@ -37,4 +37,7 @@
     <string name="delete">Delete</string>
     <string name="delete_all">Delete All</string>
     <string name="edit">Edit</string>
+    <string name="lock_text">Members list is locked</string>
+    <string name="authentication">Authentication is required to access the app</string>
+    <string name="unlock">Unlock now</string>
 </resources>

@@ -19,6 +19,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -44,6 +45,7 @@ import com.bumptech.glide.Glide;
 import com.example.memberslist.adapter.UserAdapter;
 import com.example.memberslist.database.User;
 import com.example.memberslist.databinding.ActivityMainBinding;
+import com.example.memberslist.databinding.AuthenticationDialogBinding;
 import com.example.memberslist.databinding.DialogAddUserBinding;
 import com.example.memberslist.models.UserViewModel;
 import com.google.android.material.snackbar.Snackbar;
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     public DialogAddUserBinding dialogAddUserBinding;
     private UserViewModel userViewModel;
     private AlertDialog addUserDetailsDialog, deleteOldDialog;
-    private Dialog editUserDetailsDialog;
+    private Dialog editUserDetailsDialog, authenticationDialog;
     private boolean isProgrammaticChange = false;
     private User editUser, deleteUser;
     private ImageView editIcon;
@@ -81,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
     ColorStateList blueColor, greenColor, blackColor, greyColor;
     BiometricPrompt biometricPrompt;
     BiometricPrompt.PromptInfo promptInfo;
+    private WindowManager.LayoutParams params;
+    private AuthenticationDialogBinding authenticationDialogBinding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
         mBinding.closeIcon.setVisibility(mBinding.searchEditText.getText().toString().isEmpty() ? View.GONE : View.VISIBLE);
         blackColor = ColorStateList.valueOf(getResources().getColor(R.color.black, null));
         greyColor = ColorStateList.valueOf(getResources().getColor(R.color.grey, null));
+        params = new WindowManager.LayoutParams();
         this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
         if (deleteUser != null) {
             initializeDeleteDialog(deleteUser);
@@ -823,15 +828,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showCustomLockDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Members list is locked");
-        builder.setMessage("Authentication is required to access the app");
-        builder.setCancelable(false);
-        builder.setPositiveButton("Unlock now", (dialog, which) -> {
+        authenticationDialogBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.authentication_dialog, null, false);
+        authenticationDialog = new Dialog(this);
+        authenticationDialog.setContentView(authenticationDialogBinding.getRoot());
+        authenticationDialog.setCanceledOnTouchOutside(false);
+        authenticationDialogBinding.unlock.setOnClickListener(v -> {
             biometricPrompt.authenticate(promptInfo);
+            authenticationDialog.dismiss();
         });
-        AlertDialog lockDialog = builder.create();
-        Objects.requireNonNull(lockDialog.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corner);
-        lockDialog.show();
+        Window window = authenticationDialog.getWindow();
+        if (window != null) {
+            params.width = (int) (getResources().getDisplayMetrics().widthPixels * .85);
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            window.setLayout(params.width,params.height);
+            window.setBackgroundDrawableResource(R.drawable.rounded_corner);
+        }
+        authenticationDialog.show();
     }
 }
