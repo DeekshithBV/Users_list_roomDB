@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -85,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
     BiometricPrompt.PromptInfo promptInfo;
     private WindowManager.LayoutParams params;
     private AuthenticationDialogBinding authenticationDialogBinding;
+    private GradientDrawable gradientDrawable;
+    private float cornerRadius;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         blackColor = ColorStateList.valueOf(getResources().getColor(R.color.black, null));
         greyColor = ColorStateList.valueOf(getResources().getColor(R.color.grey, null));
         params = new WindowManager.LayoutParams();
+        gradientDrawable = new GradientDrawable();
         this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
         if (deleteUser != null) {
             initializeDeleteDialog(deleteUser);
@@ -376,9 +380,12 @@ public class MainActivity extends AppCompatActivity {
             mBinding.editDeleteIncludeLayout.editOrDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
         });
 
+        userViewModel.isAuthenticateSuccess.observe(this, success -> {
+            if (!success) authenticateUser();
+        });
+
         deleteUsersOnLongPressSelection();
         editUserOnLongPressSelection();
-        authenticateUser();
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -808,6 +815,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
+                userViewModel.isAuthenticateSuccess.setValue(true);
             }
 
             @Override
@@ -841,7 +849,14 @@ public class MainActivity extends AppCompatActivity {
             params.width = (int) (getResources().getDisplayMetrics().widthPixels * .85);
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
             window.setLayout(params.width,params.height);
-            window.setBackgroundDrawableResource(R.drawable.rounded_corner);
+            //If setAttributes method is used then background doesn't becomes blur.(No difference b/w dialog and background)
+            //window.setAttributes(params);
+            cornerRadius = 8 * getResources().getDisplayMetrics().density;
+            gradientDrawable.setColor(getResources().getColor(R.color.white, null));
+            gradientDrawable.setCornerRadius(cornerRadius);
+            //Instead of using drawable xml file for background, set the radius and color programmatically in code.
+            //window.setBackgroundDrawableResource(R.drawable.rounded_corner);
+            window.setBackgroundDrawable(gradientDrawable);
         }
         authenticationDialog.show();
     }

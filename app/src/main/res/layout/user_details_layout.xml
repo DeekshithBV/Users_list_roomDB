@@ -170,12 +170,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/selected_users_color"
             android:padding="5dp"
             android:text="@{user.phoneNumber}"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textAlignment="center"
+            android:textColor="@color/white"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="@id/guideline1"
             app:layout_constraintTop_toBottomOf="@id/userPhoneKey" />

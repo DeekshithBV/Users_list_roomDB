@@ -3,6 +3,7 @@ package com.example.memberslist.adapter;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.util.DisplayMetrics;
@@ -47,6 +48,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private int width, height;
     private boolean isSelectionMode = false;
     private final List<User> selectedUsers = new ArrayList<>();
+    private GradientDrawable gradientDrawable;
 
     public UserAdapter(Context context, ActivityMainBinding mBinding, AlertDialog addUserDetailsDialog, UserViewModel userViewModel) {
         this.context = context;
@@ -57,6 +59,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         userDetailsDialog = new Dialog(context);
         params = new WindowManager.LayoutParams();
         displayMetrics = context.getResources().getDisplayMetrics();
+        gradientDrawable = new GradientDrawable();
 
         userProfileBinding = DataBindingUtil.inflate(
                 LayoutInflater.from(context),
@@ -211,6 +214,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             return;
         }
 
+        if (user.getPhoneNumber().isEmpty()) userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.55F);
+        else {
+            userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.31F);
+            userDetailsLayoutBinding.guideline4.setGuidelinePercent(0.62F);
+            gradientDrawable.setColor(context.getResources().getColor(R.color.sky_blue, null));
+            gradientDrawable.setStroke(6, context.getColor(R.color.blue));
+            gradientDrawable.setCornerRadius(20 * displayMetrics.density);
+            userDetailsLayoutBinding.userPhoneVal.setBackground(gradientDrawable);
+        }
+        userDetailsLayoutBinding.userPhoneKey.setVisibility(user.getPhoneNumber().isEmpty() ? View.GONE : View.VISIBLE);
+        userDetailsLayoutBinding.userPhoneVal.setVisibility(user.getPhoneNumber().isEmpty() ? View.GONE : View.VISIBLE);
         if (!userDetailsDialog.isShowing() && !userProfileDialog.isShowing()) {
             userDetailsDialog.show();
             userViewModel.setUserDetailsDialog(user);
