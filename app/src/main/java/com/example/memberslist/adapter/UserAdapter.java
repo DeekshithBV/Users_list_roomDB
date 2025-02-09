@@ -28,6 +28,7 @@ import com.example.memberslist.database.User;
 import com.example.memberslist.databinding.ActivityMainBinding;
 import com.example.memberslist.databinding.DialogUserProfileBinding;
 import com.example.memberslist.databinding.UserDetailsLayoutBinding;
+import com.example.memberslist.databinding.UserItemsBinding;
 import com.example.memberslist.models.UserViewModel;
 
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private boolean isSelectionMode = false;
     private final List<User> selectedUsers = new ArrayList<>();
     private GradientDrawable gradientDrawable;
+    private UserItemsBinding userItemsBinding;
 
     public UserAdapter(Context context, ActivityMainBinding mBinding, AlertDialog addUserDetailsDialog, UserViewModel userViewModel) {
         this.context = context;
@@ -88,6 +90,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         if (userViewModel.getUserDetailsDialog().getValue() != null) {
             showUserDetailsLayout(userViewModel.getUserDetailsDialog().getValue());
         }
+
+        userItemsBinding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.user_items, null, false);
     }
 
     public void setDeleteClickListener(OnDeleteClickListener onDeleteClickListener) {
@@ -127,21 +131,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         });
 
         holder.photo.setOnClickListener(v -> showUserProfileDialog(user));
-        holder.user_details.setOnClickListener(v -> {
-            showUserDetailsLayout(user);
-        });
+        holder.user_details.setOnClickListener(v -> showUserDetailsLayout(user));
 
         //Below code is for selection of users and checkbox.
         holder.itemView.setBackgroundResource(selectedUsers.contains(user) ? R.drawable.selected_users_color : R.drawable.rounded_corner);
         holder.itemView.setOnLongClickListener(v -> {
-            //isLongPressTriggered = true;
-            /*if (!selectedUsers.contains(user)) {
-                selectedUsers.add(user);
-            }
-            isSelectionMode = true;
-            activityMainBinding.checkbox.setVisibility(View.VISIBLE);
-            activityMainBinding.selectAll.setVisibility(View.VISIBLE);*/
-
             if (!isSelectionMode) {
                 isSelectionMode = true;
                 selectedUsers.add(user);
@@ -151,9 +145,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         });
 
         holder.itemView.setOnClickListener(v -> {
-            /*if (isLongPressTriggered) {
-                isLongPressTriggered = false;
-            }*/
             if (isSelectionMode) {
                 if (selectedUsers.contains(user)) {
                     selectedUsers.remove(user);
@@ -216,8 +207,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
         if (user.getPhoneNumber().isEmpty()) userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.55F);
         else {
-            userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.31F);
-            userDetailsLayoutBinding.guideline4.setGuidelinePercent(0.62F);
+            userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.33F);
+            userDetailsLayoutBinding.guideline4.setGuidelinePercent(0.66F);
             gradientDrawable.setColor(context.getResources().getColor(R.color.sky_blue, null));
             gradientDrawable.setStroke(6, context.getColor(R.color.blue));
             gradientDrawable.setCornerRadius(20 * displayMetrics.density);

@@ -18,6 +18,7 @@
                 android:text="@string/user_details"
                 android:textSize="24sp"
                 android:textStyle="bold"
+                android:textColor="@color/black"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -30,6 +31,7 @@
                 android:paddingTop="20dp"
                 android:text="@string/person_name"
                 android:textSize="20sp"
+                android:textColor="@color/black"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/details" />
@@ -41,6 +43,8 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
                 android:hint="@string/hint_name"
+                android:textColorHint="@color/grey"
+                android:textColor="@color/black"
                 android:inputType="textPersonName"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -53,6 +57,7 @@
                 android:layout_margin="10dp"
                 android:text="@string/gender"
                 android:textSize="20sp"
+                android:textColor="@color/black"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/editTextUserName" />
 
@@ -128,6 +133,11 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputLayoutDOB"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="@color/grey"
+                android:textColorHint="@color/grey"
+                app:errorTextColor="@color/crimson_red"
+                app:boxStrokeErrorColor="@color/crimson_red"
+                app:errorIconTint="@color/crimson_red"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
@@ -141,6 +151,7 @@
                     android:cursorVisible="false"
                     android:focusable="false"
                     android:hint="@string/dob"
+                    android:textColor="@color/black"
                     android:inputType="date"
                     android:padding="12dp"
                     android:textSize="20sp" />
@@ -154,6 +165,7 @@
                 android:layout_margin="10dp"
                 android:text="@string/phone_no"
                 android:textSize="20sp"
+                android:textColor="@color/black"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textInputLayoutDOB" />
 
@@ -193,6 +205,8 @@
                         android:inputType="phone"
                         android:padding="12dp"
                         android:textSize="20sp"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@id/countryCodePicker"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -208,6 +222,7 @@
                 android:layout_margin="10dp"
                 android:backgroundTint="@color/sky_blue"
                 android:text="@string/photo"
+                android:textColor="@color/white"
                 app:layout_constraintBottom_toBottomOf="@id/imageViewPhoto"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/imageViewPhoto" />
@@ -229,6 +244,7 @@
                 android:layout_margin="10dp"
                 android:backgroundTint="@color/red"
                 android:text="@string/Cancel"
+                android:textColor="@color/white"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/imageViewPhoto" />
 
@@ -237,6 +253,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
+                android:textColor="@color/white"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/imageViewPhoto" />
 
