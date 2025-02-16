@@ -30,9 +30,11 @@ import com.example.memberslist.databinding.DialogUserProfileBinding;
 import com.example.memberslist.databinding.UserDetailsLayoutBinding;
 import com.example.memberslist.databinding.UserItemsBinding;
 import com.example.memberslist.models.UserViewModel;
+import com.example.memberslist.utilities.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     private List<User> users = new ArrayList<>();
@@ -49,8 +51,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private int width, height;
     private boolean isSelectionMode = false;
     private final List<User> selectedUsers = new ArrayList<>();
-    private GradientDrawable gradientDrawable;
+    private final GradientDrawable gradientDrawable, favColorDrawable;
     private UserItemsBinding userItemsBinding;
+    private Map<Integer, String> colorMap;
 
     public UserAdapter(Context context, ActivityMainBinding mBinding, AlertDialog addUserDetailsDialog, UserViewModel userViewModel) {
         this.context = context;
@@ -62,6 +65,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         params = new WindowManager.LayoutParams();
         displayMetrics = context.getResources().getDisplayMetrics();
         gradientDrawable = new GradientDrawable();
+        favColorDrawable = new GradientDrawable();
+        colorMap = ColorUtils.getInstance(context).getColorMap();
 
         userProfileBinding = DataBindingUtil.inflate(
                 LayoutInflater.from(context),
@@ -240,6 +245,22 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             }
         });
 
+        userDetailsLayoutBinding.colorToggleSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                userDetailsLayoutBinding.favColorImg.setVisibility(View.VISIBLE);
+                userDetailsLayoutBinding.favColorTxt.setVisibility(View.GONE);
+                if (user.getFavouriteColor() != null) {
+                    favColorDrawable.setColor(Integer.parseInt(user.getFavouriteColor()));
+                    favColorDrawable.setCornerRadius(50 * displayMetrics.density);
+                    userDetailsLayoutBinding.favColorImg.setBackground(favColorDrawable);
+                }
+            } else {
+                userDetailsLayoutBinding.favColorImg.setVisibility(View.GONE);
+                userDetailsLayoutBinding.favColorTxt.setVisibility(View.VISIBLE);
+                userDetailsLayoutBinding.favColorTxt.setText(colorMap.get(Integer.parseInt(user.getFavouriteColor())));
+                userDetailsLayoutBinding.favColorTxt.setTextColor(Integer.parseInt(user.getFavouriteColor()));
+            }
+        });
     }
 
     public Dialog getUserProfileDialog() {

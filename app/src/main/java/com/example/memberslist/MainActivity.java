@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
@@ -47,8 +49,10 @@ import com.example.memberslist.adapter.UserAdapter;
 import com.example.memberslist.database.User;
 import com.example.memberslist.databinding.ActivityMainBinding;
 import com.example.memberslist.databinding.AuthenticationDialogBinding;
+import com.example.memberslist.databinding.ColorsPalletDialogBinding;
 import com.example.memberslist.databinding.DialogAddUserBinding;
 import com.example.memberslist.models.UserViewModel;
+import com.example.memberslist.utilities.ColorUtils;
 import com.google.android.material.snackbar.Snackbar;
 import com.hbb20.CountryCodePicker;
 
@@ -63,7 +67,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -74,10 +80,9 @@ public class MainActivity extends AppCompatActivity {
     public DialogAddUserBinding dialogAddUserBinding;
     private UserViewModel userViewModel;
     private AlertDialog addUserDetailsDialog, deleteOldDialog;
-    private Dialog editUserDetailsDialog, authenticationDialog;
+    private Dialog editUserDetailsDialog, authenticationDialog, colorPickerDialog;
     private boolean isProgrammaticChange = false;
     private User editUser, deleteUser;
-    private ImageView editIcon;
     RecyclerView recyclerView;
     private String getGenderTextFromClick = "";
     UserAdapter userAdapter;
@@ -87,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private WindowManager.LayoutParams params;
     private AuthenticationDialogBinding authenticationDialogBinding;
     private GradientDrawable gradientDrawable;
-    private float cornerRadius;
+    private ColorsPalletDialogBinding colorsPalletDialogBinding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -230,6 +235,8 @@ public class MainActivity extends AppCompatActivity {
             //String getGenderTextFromSpinner = dialogAddUserBinding.spinnerGender.getSelectedItem().toString();
             String phoneNumber = Objects.requireNonNull(dialogAddUserBinding.editTextPhoneNo.getText()).toString();
             String countryCode = dialogAddUserBinding.countryCodePicker.getSelectedCountryCodeWithPlus();
+            String favouriteColor = String.valueOf(userViewModel.favouriteColor.getValue());
+            Log.d("favouriteColor: ", "live val "+favouriteColor);
 
             String age = calculateAge(dob);
             String gender = getGenderText(getGenderTextFromClick);
@@ -245,7 +252,8 @@ public class MainActivity extends AppCompatActivity {
             if (!isValidUserPhoneNo) return;
 
             if (editUser == null) {
-                User user = new User(userName, gender, dob, photoPath, age, phoneNumber, countryCode);
+                User user = new User(userName, gender, dob, photoPath, age, phoneNumber, countryCode, favouriteColor);
+                Log.d("favouriteColor: ", "live val2 "+favouriteColor);
                 userViewModel.insert(user);
             } else {
                 editUser.setName(userName);
@@ -255,6 +263,8 @@ public class MainActivity extends AppCompatActivity {
                 editUser.setPhotoUri(photoPath);
                 editUser.setPhoneNumber(phoneNumber);
                 editUser.setCountryCode(countryCode);
+                editUser.setFavouriteColor(favouriteColor);
+                Log.d("favouriteColor: ", "live val3 "+favouriteColor);
                 userViewModel.update(editUser);
                 editUserDetailsDialog.dismiss();
             }
@@ -386,6 +396,10 @@ public class MainActivity extends AppCompatActivity {
 
         deleteUsersOnLongPressSelection();
         editUserOnLongPressSelection();
+        dialogAddUserBinding.colorBox.setOnClickListener(v -> {
+            userViewModel.favouriteColor.setValue(showColorPickerDialog(editUser));
+            Log.d("favouriteColor: ", "live val4 "+ userViewModel.favouriteColor.getValue());
+        });
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -599,6 +613,7 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(Integer.parseInt(editUser.getCountryCode()));
         dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.update));
         dialogAddUserBinding.buttonAdd.setBackgroundTintList(greenColor);
+        dialogAddUserBinding.colorBox.setBackgroundColor(Integer.parseInt(editUser.getFavouriteColor()));
     }
 
     private void emptyUserDialog() {
@@ -614,6 +629,7 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(+91);
         dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
         dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);
+        dialogAddUserBinding.colorBox.setBackgroundColor(getColor(R.color.dark_green));
         userViewModel.setIsAddUserDialogVisible(true);
     }
 
@@ -795,6 +811,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void editUserOnLongPressSelection() {
         mBinding.editDeleteIncludeLayout.edit.setOnClickListener(v -> {
+            //java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0
             showUserDetailsDialog(userAdapter.getSelectedUsers().get(0), userAdapter.getUserDetailsDialog(), userAdapter.userDetailsLayoutBinding.editUser);
         });
     }
@@ -851,13 +868,75 @@ public class MainActivity extends AppCompatActivity {
             window.setLayout(params.width,params.height);
             //If setAttributes method is used then background doesn't becomes blur.(No difference b/w dialog and background)
             //window.setAttributes(params);
-            cornerRadius = 8 * getResources().getDisplayMetrics().density;
             gradientDrawable.setColor(getResources().getColor(R.color.white, null));
-            gradientDrawable.setCornerRadius(cornerRadius);
+            gradientDrawable.setCornerRadius(8 * getResources().getDisplayMetrics().density);
             //Instead of using drawable xml file for background, set the radius and color programmatically in code.
             //window.setBackgroundDrawableResource(R.drawable.rounded_corner);
             window.setBackgroundDrawable(gradientDrawable);
         }
         authenticationDialog.show();
+    }
+
+    private int showColorPickerDialog(User editUser) {
+        colorPickerDialog = new Dialog(this);
+        colorsPalletDialogBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.colors_pallet_dialog, null, false);
+        colorPickerDialog.setContentView(colorsPalletDialogBinding.getRoot());
+
+        final int[] selectedColor = {Color.RED};
+
+        Map<Integer, String> colorMap = ColorUtils.getInstance(this).getColorMap();
+
+        for (Map.Entry<Integer, String> color : colorMap.entrySet()) {
+            FrameLayout frameLayout = new FrameLayout(this);
+            frameLayout.setLayoutParams(new ViewGroup.LayoutParams(140, 140));
+            //frameLayout.setPadding(8,8,8,8); --> works but the size of colorView becomes small.
+
+            ImageView colorView = new ImageView(this), tickMark = new ImageView(this);
+            colorView.setLayoutParams(new ViewGroup.LayoutParams(120, 120));
+            gradientDrawable = new GradientDrawable();
+            gradientDrawable.setColor(color.getKey());
+            gradientDrawable.setCornerRadius(4 * getResources().getDisplayMetrics().density);
+            colorView.setBackground(gradientDrawable);
+
+            tickMark.setLayoutParams(new ViewGroup.LayoutParams(60, 60));
+            tickMark.setImageResource(R.drawable.tick_mark_icon);
+            if (editUser != null)
+                tickMark.setVisibility(color.getKey() == Integer.parseInt(editUser.getFavouriteColor()) ? View.VISIBLE : View.GONE);
+            else
+                tickMark.setVisibility(color.getKey() == getColor(R.color.dark_green) ? View.VISIBLE : View.GONE);
+            frameLayout.addView(colorView);
+            frameLayout.addView(tickMark);
+            colorsPalletDialogBinding.colorGrid.addView(frameLayout);
+
+            frameLayout.setOnClickListener(v -> {
+                selectedColor[0] = color.getKey();
+                for (int i=0; i<colorsPalletDialogBinding.colorGrid.getChildCount(); i++) {
+                    FrameLayout item = (FrameLayout) colorsPalletDialogBinding.colorGrid.getChildAt(i);
+                    ImageView tick = (ImageView) item.getChildAt(1);
+                    tick.setVisibility(View.GONE);
+                }
+                tickMark.setVisibility(View.VISIBLE);
+                Log.d( "showColorPickerDialog: ", "color "+ frameLayout.getChildAt(1).getSolidColor());
+            });
+        }
+        colorPickerDialog.show();
+        colorsPalletDialogBinding.cancelButton.setOnClickListener(v -> {
+            dialogAddUserBinding.colorBox.setBackgroundColor(editUser != null ?
+                    Integer.parseInt(editUser.getFavouriteColor()) : getColor(R.color.dark_green));
+            userViewModel.favouriteColor.setValue(editUser != null ?
+                    Integer.parseInt(editUser.getFavouriteColor()) : getColor(R.color.dark_green));
+            colorPickerDialog.dismiss();
+        });
+
+        colorsPalletDialogBinding.okButton.setOnClickListener(v -> {
+            dialogAddUserBinding.colorBox.setBackgroundColor(selectedColor[0]);
+            userViewModel.favouriteColor.setValue(selectedColor[0]);
+            colorPickerDialog.dismiss();
+        });
+
+        colorPickerDialog.setOnDismissListener(dialog -> {
+            selectedColor[0] = getColor(R.color.dark_green);
+        });
+        return selectedColor[0];
     }
 }

@@ -40,4 +40,26 @@
     <string name="lock_text">Members list is locked</string>
     <string name="authentication">Authentication is required to access the app</string>
     <string name="unlock">Unlock now</string>
+    <string name="fav_color">Favourite color</string>
+    <string name="choose_fav_color">Choose favourite color</string>
+    <string name="ok">OK</string>
+    <string name="color_red">Red</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_green">Green</string>
+    <string name="color_yellow">Yellow</string>
+    <string name="color_black">Black</string>
+    <string name="color_cyan">Cyan</string>
+    <string name="color_magenta">Magenta</string>
+    <string name="color_dark_gray">Dark Gray</string>
+    <string name="color_light_gray">Light Gray</string>
+    <string name="color_water">Water Blue</string>
+    <string name="color_crimson_red">Crimson Red</string>
+    <string name="color_light_green">Light Green</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_maroon">Maroon</string>
+    <string name="color_dark_green">Dark Green</string>
+    <string name="color_gold">Gold</string>
+    <string name="color_baby_pink">Baby Pink</string>
+    <string name="color_sky_blue">Sky Blue</string>
+    <string name="show_color">Show color</string>
 </resources>

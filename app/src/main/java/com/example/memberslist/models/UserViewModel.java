@@ -25,6 +25,7 @@ public class UserViewModel extends AndroidViewModel {
     public MutableLiveData<String> selectedUserCount = new MutableLiveData<>();
     public MutableLiveData<Boolean> deleteOrEditLayoutVisibility = new MutableLiveData<>(false);
     public MutableLiveData<Boolean> isAuthenticateSuccess = new MutableLiveData<>(false);
+    public MutableLiveData<Integer> favouriteColor = new MutableLiveData<>();
 
     public UserViewModel(@NonNull Application application) {
         super(application);

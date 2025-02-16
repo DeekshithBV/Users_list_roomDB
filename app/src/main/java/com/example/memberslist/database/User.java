@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey;
 public class User {
     @PrimaryKey(autoGenerate = true)
     private int id;
-    private String name, gender, dob, photoUri, age, phoneNumber, countryCode;
-    public User(String name, String gender, String dob, String photoUri, String age, String phoneNumber, String countryCode) {
+    private String name, gender, dob, photoUri, age, phoneNumber, countryCode, favouriteColor;
+    public User(String name, String gender, String dob, String photoUri, String age, String phoneNumber, String countryCode, String favouriteColor) {
         this.name = name;
         this.gender = gender;
         this.dob = dob;
@@ -15,6 +15,7 @@ public class User {
         this.age = age;
         this.phoneNumber = phoneNumber;
         this.countryCode = countryCode;
+        this.favouriteColor = favouriteColor;
     }
     public int getId() {
         return id;
@@ -63,5 +64,11 @@ public class User {
     }
     public String getCountryCode() {
         return countryCode;
+    }
+    public void setFavouriteColor(String favouriteColor) {
+        this.favouriteColor = favouriteColor;
+    }
+    public String getFavouriteColor() {
+        return favouriteColor;
     }
 }

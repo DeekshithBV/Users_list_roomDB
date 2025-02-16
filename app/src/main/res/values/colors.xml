@@ -14,4 +14,7 @@
     <color name="sample">#C2D6DCDE</color>
     <color name="light_green">#A2DEA4</color>
     <color name="crimson_red">#B81914</color>
+    <color name="meroon">#800080</color>
+    <color name="dark_green">#008080</color>
+    <color name="gold">#A2AF10</color>
 </resources>
