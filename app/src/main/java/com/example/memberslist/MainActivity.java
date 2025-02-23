@@ -1,6 +1,7 @@
 package com.example.memberslist;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -67,7 +68,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -91,8 +91,9 @@ public class MainActivity extends AppCompatActivity {
     BiometricPrompt.PromptInfo promptInfo;
     private WindowManager.LayoutParams params;
     private AuthenticationDialogBinding authenticationDialogBinding;
-    private GradientDrawable gradientDrawable;
+    private GradientDrawable gradientDrawable, octagonDrawable;
     private ColorsPalletDialogBinding colorsPalletDialogBinding;
+    ObjectAnimator rotateAnimator;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         blackColor = ColorStateList.valueOf(getResources().getColor(R.color.black, null));
         greyColor = ColorStateList.valueOf(getResources().getColor(R.color.grey, null));
         params = new WindowManager.LayoutParams();
-        gradientDrawable = new GradientDrawable();
+        gradientDrawable = octagonDrawable = new GradientDrawable();
         this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
         if (deleteUser != null) {
             initializeDeleteDialog(deleteUser);
@@ -196,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
             addUserDetailsDialog.dismiss();
             photoUri = null;
             dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
+            userViewModel.favouriteColor.setValue(null);
         });
 
         // Handle DOB selection
@@ -274,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
             photoUri = null;
             dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
             userAdapter.clearAll();
+            userViewModel.favouriteColor.setValue(null);
         });
 
         //Below code is for selection of users and checkbox.
@@ -477,7 +480,12 @@ public class MainActivity extends AppCompatActivity {
             emptyUserDialog();
         }
 
+        octagonDrawable.setCornerRadius(10 * getResources().getDisplayMetrics().density);
+        dialogAddUserBinding.colorBox.setBackground(octagonDrawable);
         addUserDetailsDialog.show();
+        rotateAnimator = ObjectAnimator.ofFloat(dialogAddUserBinding.colorBox, "rotation", 0f, 1800f);
+        rotateAnimator.setDuration(1000);
+        rotateAnimator.start();
         setCursorVisibilityForEditTextUserName();
         setCursorVisibilityForEditTextPhoneNumber();
     }
@@ -613,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(Integer.parseInt(editUser.getCountryCode()));
         dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.update));
         dialogAddUserBinding.buttonAdd.setBackgroundTintList(greenColor);
-        dialogAddUserBinding.colorBox.setBackgroundColor(Integer.parseInt(editUser.getFavouriteColor()));
+        octagonDrawable.setColor(Integer.parseInt(editUser.getFavouriteColor()));
     }
 
     private void emptyUserDialog() {
@@ -629,7 +637,7 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.countryCodePicker.setCountryForPhoneCode(+91);
         dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
         dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);
-        dialogAddUserBinding.colorBox.setBackgroundColor(getColor(R.color.dark_green));
+        octagonDrawable.setColor(getColor(R.color.dark_green));
         userViewModel.setIsAddUserDialogVisible(true);
     }
 
@@ -882,7 +890,9 @@ public class MainActivity extends AppCompatActivity {
         colorsPalletDialogBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.colors_pallet_dialog, null, false);
         colorPickerDialog.setContentView(colorsPalletDialogBinding.getRoot());
 
-        final int[] selectedColor = {Color.RED};
+        if (userViewModel.favouriteColor.getValue() == null)
+            userViewModel.favouriteColor.setValue(editUser == null ? getColor(R.color.dark_green) : Integer.parseInt(editUser.getFavouriteColor()));
+        final int[] selectedColor = {userViewModel.favouriteColor.getValue() != null ? userViewModel.favouriteColor.getValue() : getColor(R.color.dark_green)};
 
         Map<Integer, String> colorMap = ColorUtils.getInstance(this).getColorMap();
 
@@ -900,10 +910,15 @@ public class MainActivity extends AppCompatActivity {
 
             tickMark.setLayoutParams(new ViewGroup.LayoutParams(60, 60));
             tickMark.setImageResource(R.drawable.tick_mark_icon);
-            if (editUser != null)
-                tickMark.setVisibility(color.getKey() == Integer.parseInt(editUser.getFavouriteColor()) ? View.VISIBLE : View.GONE);
-            else
-                tickMark.setVisibility(color.getKey() == getColor(R.color.dark_green) ? View.VISIBLE : View.GONE);
+            if (userViewModel.favouriteColor.getValue() == null) {
+                if (editUser != null)
+                    tickMark.setVisibility(color.getKey() == Integer.parseInt(editUser.getFavouriteColor()) ?
+                            View.VISIBLE : View.GONE);
+                else tickMark.setVisibility(color.getKey() == getColor(R.color.dark_green) ?
+                        View.VISIBLE : View.GONE);
+            } else
+                tickMark.setVisibility(Objects.equals(color.getKey(), userViewModel.favouriteColor.getValue()) ?
+                        View.VISIBLE : View.GONE);
             frameLayout.addView(colorView);
             frameLayout.addView(tickMark);
             colorsPalletDialogBinding.colorGrid.addView(frameLayout);
@@ -921,15 +936,17 @@ public class MainActivity extends AppCompatActivity {
         }
         colorPickerDialog.show();
         colorsPalletDialogBinding.cancelButton.setOnClickListener(v -> {
-            dialogAddUserBinding.colorBox.setBackgroundColor(editUser != null ?
+            octagonDrawable.setColor(editUser != null ?
                     Integer.parseInt(editUser.getFavouriteColor()) : getColor(R.color.dark_green));
+            dialogAddUserBinding.colorBox.setBackground(octagonDrawable);
             userViewModel.favouriteColor.setValue(editUser != null ?
                     Integer.parseInt(editUser.getFavouriteColor()) : getColor(R.color.dark_green));
             colorPickerDialog.dismiss();
         });
 
         colorsPalletDialogBinding.okButton.setOnClickListener(v -> {
-            dialogAddUserBinding.colorBox.setBackgroundColor(selectedColor[0]);
+            octagonDrawable.setColor(selectedColor[0]);
+            dialogAddUserBinding.colorBox.setBackground(octagonDrawable);
             userViewModel.favouriteColor.setValue(selectedColor[0]);
             colorPickerDialog.dismiss();
         });
