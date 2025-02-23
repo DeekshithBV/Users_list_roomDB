@@ -901,6 +901,9 @@ public class MainActivity extends AppCompatActivity {
             frameLayout.setLayoutParams(new ViewGroup.LayoutParams(140, 140));
             //frameLayout.setPadding(8,8,8,8); --> works but the size of colorView becomes small.
 
+            FrameLayout colorContainer = new FrameLayout(this);
+            colorContainer.setLayoutParams(new ViewGroup.LayoutParams(120, 120));
+
             ImageView colorView = new ImageView(this), tickMark = new ImageView(this);
             colorView.setLayoutParams(new ViewGroup.LayoutParams(120, 120));
             gradientDrawable = new GradientDrawable();
@@ -908,7 +911,9 @@ public class MainActivity extends AppCompatActivity {
             gradientDrawable.setCornerRadius(4 * getResources().getDisplayMetrics().density);
             colorView.setBackground(gradientDrawable);
 
-            tickMark.setLayoutParams(new ViewGroup.LayoutParams(60, 60));
+            FrameLayout.LayoutParams tickMarkParams = new FrameLayout.LayoutParams(60, 60);
+            tickMarkParams.gravity = Gravity.CENTER;
+            tickMark.setLayoutParams(tickMarkParams);
             tickMark.setImageResource(R.drawable.tick_mark_icon);
             if (userViewModel.favouriteColor.getValue() == null) {
                 if (editUser != null)
@@ -919,19 +924,20 @@ public class MainActivity extends AppCompatActivity {
             } else
                 tickMark.setVisibility(Objects.equals(color.getKey(), userViewModel.favouriteColor.getValue()) ?
                         View.VISIBLE : View.GONE);
-            frameLayout.addView(colorView);
-            frameLayout.addView(tickMark);
+            colorContainer.addView(colorView);
+            colorContainer.addView(tickMark);
+            frameLayout.addView(colorContainer);
             colorsPalletDialogBinding.colorGrid.addView(frameLayout);
 
             frameLayout.setOnClickListener(v -> {
                 selectedColor[0] = color.getKey();
                 for (int i=0; i<colorsPalletDialogBinding.colorGrid.getChildCount(); i++) {
                     FrameLayout item = (FrameLayout) colorsPalletDialogBinding.colorGrid.getChildAt(i);
-                    ImageView tick = (ImageView) item.getChildAt(1);
+                    FrameLayout col_container = (FrameLayout) item.getChildAt(0);
+                    ImageView tick = (ImageView) col_container.getChildAt(1);
                     tick.setVisibility(View.GONE);
                 }
                 tickMark.setVisibility(View.VISIBLE);
-                Log.d( "showColorPickerDialog: ", "color "+ frameLayout.getChildAt(1).getSolidColor());
             });
         }
         colorPickerDialog.show();
