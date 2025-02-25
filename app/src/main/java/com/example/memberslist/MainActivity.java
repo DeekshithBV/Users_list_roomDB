@@ -646,6 +646,7 @@ public class MainActivity extends AppCompatActivity {
                 mBinding.noUsersTextView.setVisibility(View.VISIBLE);
                 mBinding.recyclerView.setVisibility(View.GONE);
                 userAdapter.setUsers(Collections.emptyList());
+                mBinding.checkbox.setChecked(false);
             } else {
                 mBinding.noUsersTextView.setVisibility(View.GONE);
                 mBinding.recyclerView.setVisibility(View.VISIBLE);
