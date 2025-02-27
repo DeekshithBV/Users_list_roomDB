@@ -120,11 +120,8 @@ public class MainActivity extends AppCompatActivity {
 
         userViewModel.getIsAddUserDialogVisible().observe(this, visible -> {
             if (visible) {
-                dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
-                dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);
-                addUserDetailsDialog.show();
-                //Below line not leads to window leak crash.
-                //showUserDetailsDialog(null, null, null);
+                //Solved the continuous loop issue.
+                showUserDetailsDialog(null, null, null);
             }
         });
 
@@ -188,7 +185,19 @@ public class MainActivity extends AppCompatActivity {
             userViewModel.setDeleteUserDialog(user);
         });
 
-        mBinding.addIcon.setOnClickListener(v -> showUserDetailsDialog(null, null, null));
+        mBinding.addIcon.setOnClickListener(v -> {
+            if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
+                return;
+            }
+            if (userAdapter.getUserProfileDialog() != null && userAdapter.getUserProfileDialog().isShowing()) {
+                return;
+            }
+            if (userAdapter.getUserDetailsDialog() != null && userAdapter.getUserDetailsDialog().isShowing()) {
+                return;
+            }
+            showUserDetailsDialog(null, null, null);
+            userViewModel.setIsAddUserDialogVisible(true);
+        });
 
         dialogAddUserBinding.buttonCancel.setOnClickListener(v -> {
             userViewModel.setIsAddUserDialogVisible(false);
@@ -452,17 +461,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showUserDetailsDialog(User editUser, Dialog editUserDetailsDialog, ImageView editIcon) {
-        //Below lines can't use because dialogAddUserBinding is initialized and inflated inside the onCreate
-        //methode, so on 2nd time click of add button the dialog view was not appearing.
-
-        /*if (dialogAddUserBinding != null && dialogAddUserBinding.getRoot().getParent() != null) {
-            ((ViewGroup) dialogAddUserBinding.getRoot().getParent()).removeView(dialogAddUserBinding.getRoot());
-        }*/
-
         this.editUser = editUser;
         this.editUserDetailsDialog = editUserDetailsDialog;
 
-        if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
+        /*if (deleteOldDialog != null && deleteOldDialog.isShowing()) {
             return;
         }
         if (userAdapter.getUserProfileDialog() != null && userAdapter.getUserProfileDialog().isShowing()) {
@@ -470,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (userAdapter.getUserDetailsDialog() != null && userAdapter.getUserDetailsDialog().isShowing() && editIcon == null) {
             return;
-        }
+        }*/
 
         //Populate existing user data if edit operation
         if (editUser != null) {
@@ -478,15 +480,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             emptyUserDialog();
         }
-
-        octagonDrawable.setCornerRadius(10 * getResources().getDisplayMetrics().density);
-        dialogAddUserBinding.colorBox.setBackground(octagonDrawable);
-        addUserDetailsDialog.show();
-        rotateAnimator = ObjectAnimator.ofFloat(dialogAddUserBinding.colorBox, "rotation", 0f, 1800f);
-        rotateAnimator.setDuration(1000);
-        rotateAnimator.start();
-        setCursorVisibilityForEditTextUserName();
-        setCursorVisibilityForEditTextPhoneNumber();
+        addUserDialogShow();
     }
 
     @NonNull
@@ -637,7 +631,6 @@ public class MainActivity extends AppCompatActivity {
         dialogAddUserBinding.buttonAdd.setText(getResources().getString(R.string.Add));
         dialogAddUserBinding.buttonAdd.setBackgroundTintList(blueColor);
         octagonDrawable.setColor(getColor(R.color.dark_green));
-        userViewModel.setIsAddUserDialogVisible(true);
     }
 
     private void searchUsers(String query) {
@@ -961,5 +954,16 @@ public class MainActivity extends AppCompatActivity {
             selectedColor[0] = getColor(R.color.dark_green);
         });
         return selectedColor[0];
+    }
+
+    private void addUserDialogShow() {
+        octagonDrawable.setCornerRadius(10 * getResources().getDisplayMetrics().density);
+        dialogAddUserBinding.colorBox.setBackground(octagonDrawable);
+        addUserDetailsDialog.show();
+        rotateAnimator = ObjectAnimator.ofFloat(dialogAddUserBinding.colorBox, "rotation", 0f, 1800f);
+        rotateAnimator.setDuration(1000);
+        rotateAnimator.start();
+        setCursorVisibilityForEditTextUserName();
+        setCursorVisibilityForEditTextPhoneNumber();
     }
 }
