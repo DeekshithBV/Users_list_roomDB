@@ -13,6 +13,8 @@ public class MovableFloatingActionButton extends FloatingActionButton implements
     private final static float CLICK_DRAG_TOLERANCE = 10; // Often, there will be a slight, unintentional, drag when the user taps the FAB, so we need to account for this.
     private float downRawX, downRawY;
     private float dX, dY;
+    private int parentWidth, margin;
+    View viewParent;
 
     public MovableFloatingActionButton(Context context) {
         super(context);
@@ -50,8 +52,8 @@ public class MovableFloatingActionButton extends FloatingActionButton implements
             int viewWidth = view.getWidth();
             int viewHeight = view.getHeight();
 
-            View viewParent = (View) view.getParent();
-            int parentWidth = viewParent.getWidth();
+            viewParent = (View) view.getParent();
+            parentWidth = viewParent.getWidth();
             int parentHeight = viewParent.getHeight();
 
             float newX = motionEvent.getRawX() + dX;
@@ -81,6 +83,21 @@ public class MovableFloatingActionButton extends FloatingActionButton implements
             if (Math.abs(upDX) < CLICK_DRAG_TOLERANCE && Math.abs(upDY) < CLICK_DRAG_TOLERANCE) { // A click
                 return performClick();
             } else { // A drag
+                float currentX = view.getX();
+                margin = (int) (parentWidth * 0.05);
+                if (currentX < (float) parentWidth /2) {
+                    view.animate()
+                            .x(margin)
+                            .y(view.getY())
+                            .setDuration(200)
+                            .start();
+                } else {
+                    view.animate()
+                            .x(parentWidth - view.getWidth()- margin)
+                            .y(view.getY())
+                            .setDuration(200)
+                            .start();
+                }
                 return true; // Consumed
             }
 
