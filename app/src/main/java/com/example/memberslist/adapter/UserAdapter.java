@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
-    private List<User> users = new ArrayList<>();
+    public List<User> users = new ArrayList<>();
     private final Context context;
     private OnDeleteClickListener onDeleteClickListener;
     public DialogUserProfileBinding userProfileBinding;

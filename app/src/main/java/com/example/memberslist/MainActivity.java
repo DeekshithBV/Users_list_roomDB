@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -51,6 +52,7 @@ import com.example.memberslist.databinding.ActivityMainBinding;
 import com.example.memberslist.databinding.AuthenticationDialogBinding;
 import com.example.memberslist.databinding.ColorsPalletDialogBinding;
 import com.example.memberslist.databinding.DialogAddUserBinding;
+import com.example.memberslist.databinding.FilterDialogBinding;
 import com.example.memberslist.models.UserViewModel;
 import com.example.memberslist.utilities.ColorUtils;
 import com.google.android.material.snackbar.Snackbar;
@@ -64,9 +66,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     public DialogAddUserBinding dialogAddUserBinding;
     private UserViewModel userViewModel;
     private AlertDialog addUserDetailsDialog, deleteOldDialog;
-    private Dialog editUserDetailsDialog, authenticationDialog, colorPickerDialog;
+    private Dialog editUserDetailsDialog, authenticationDialog, colorPickerDialog, filterDialog;
     private boolean isProgrammaticChange = false;
     private User editUser, deleteUser;
     RecyclerView recyclerView;
@@ -90,8 +94,9 @@ public class MainActivity extends AppCompatActivity {
     BiometricPrompt.PromptInfo promptInfo;
     private WindowManager.LayoutParams params;
     private AuthenticationDialogBinding authenticationDialogBinding;
-    private GradientDrawable gradientDrawable, octagonDrawable;
+    private GradientDrawable gradientDrawable, octagonDrawable, applyFilterDrawable, resetFilterDrawable;
     private ColorsPalletDialogBinding colorsPalletDialogBinding;
+    private FilterDialogBinding filterDialogBinding;
     ObjectAnimator rotateAnimator;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         blackColor = ColorStateList.valueOf(getResources().getColor(R.color.black, null));
         greyColor = ColorStateList.valueOf(getResources().getColor(R.color.grey, null));
         params = new WindowManager.LayoutParams();
-        gradientDrawable = octagonDrawable = new GradientDrawable();
+        gradientDrawable = octagonDrawable = applyFilterDrawable = resetFilterDrawable = new GradientDrawable();
         this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
         if (deleteUser != null) {
             initializeDeleteDialog(deleteUser);
@@ -246,7 +251,6 @@ public class MainActivity extends AppCompatActivity {
             String phoneNumber = Objects.requireNonNull(dialogAddUserBinding.editTextPhoneNo.getText()).toString();
             String countryCode = dialogAddUserBinding.countryCodePicker.getSelectedCountryCodeWithPlus();
             String favouriteColor = String.valueOf(userViewModel.favouriteColor.getValue());
-            Log.d("favouriteColor: ", "live val "+favouriteColor);
 
             String age = calculateAge(dob);
             String gender = getGenderText(getGenderTextFromClick);
@@ -263,7 +267,6 @@ public class MainActivity extends AppCompatActivity {
 
             if (editUser == null) {
                 User user = new User(userName, gender, dob, photoPath, age, phoneNumber, countryCode, favouriteColor);
-                Log.d("favouriteColor: ", "live val2 "+favouriteColor);
                 userViewModel.insert(user);
             } else {
                 editUser.setName(userName);
@@ -274,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
                 editUser.setPhoneNumber(phoneNumber);
                 editUser.setCountryCode(countryCode);
                 editUser.setFavouriteColor(favouriteColor);
-                Log.d("favouriteColor: ", "live val3 "+favouriteColor);
                 userViewModel.update(editUser);
                 editUserDetailsDialog.dismiss();
             }
@@ -332,11 +334,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 searchUsers(s.toString());
-                /*if (s.toString().isEmpty())
-                    mBinding.closeIcon.setVisibility(View.GONE);
-                else
-                    mBinding.closeIcon.setVisibility(View.VISIBLE);*/
-
                 //If else replaced with tertiary operator.
                 mBinding.closeIcon.setVisibility(s.toString().isEmpty() ? View.GONE : View.VISIBLE);
             }
@@ -407,10 +404,8 @@ public class MainActivity extends AppCompatActivity {
 
         deleteUsersOnLongPressSelection();
         editUserOnLongPressSelection();
-        dialogAddUserBinding.colorBox.setOnClickListener(v -> {
-            userViewModel.favouriteColor.setValue(showColorPickerDialog(editUser));
-            Log.d("favouriteColor: ", "live val4 "+ userViewModel.favouriteColor.getValue());
-        });
+        dialogAddUserBinding.colorBox.setOnClickListener(v -> userViewModel.favouriteColor.setValue(showColorPickerDialog(editUser)));
+        mBinding.filterIcon.setOnClickListener(v -> showFilterDialog());
     }
 
     private void initializeDeleteDialog(@NonNull User user) {
@@ -965,5 +960,123 @@ public class MainActivity extends AppCompatActivity {
         rotateAnimator.start();
         setCursorVisibilityForEditTextUserName();
         setCursorVisibilityForEditTextPhoneNumber();
+    }
+
+    private void showFilterDialog() {
+        filterDialog = new Dialog(this);
+        filterDialogBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.filter_dialog, null, false);
+        filterDialog.setContentView(filterDialogBinding.getRoot());
+        Window window = filterDialog.getWindow();
+        if (window != null) {
+            window.setLayout((int) (getResources().getDisplayMetrics().widthPixels * .95), ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.getAttributes().gravity = Gravity.TOP;
+            window.getAttributes().verticalMargin = 0.01F;
+            window.setBackgroundDrawableResource(R.drawable.rounded_corner);
+        }
+        //Below code Didn't work well with button.
+
+        /*applyFilterDrawable.setShape(GradientDrawable.RECTANGLE);
+        applyFilterDrawable.setTintList(greenColor);
+        applyFilterDrawable.setCornerRadius(20 * getResources().getDisplayMetrics().density);
+        applyFilterDrawable.setStroke(6, blueColor);
+        filterDialogBinding.btnApplyFilter.post(() -> {
+            filterDialogBinding.btnApplyFilter.setBackground(applyFilterDrawable);
+            filterDialogBinding.btnApplyFilter.invalidate();
+        });
+        resetFilterDrawable.setColor(greyColor);
+        resetFilterDrawable.setCornerRadius(16 * getResources().getDisplayMetrics().density);
+        resetFilterDrawable.setStroke(2, blackColor);
+        filterDialogBinding.btnResetFilter.setBackground(resetFilterDrawable);*/
+        filterDialog.show();
+        filterDialogBinding.etStartDate.setOnClickListener(v -> showDatePicker(filterDialogBinding.etStartDate));
+        filterDialogBinding.etEndDate.setOnClickListener(v -> showDatePicker(filterDialogBinding.etEndDate));
+
+        filterDialogBinding.btnApplyFilter.setOnClickListener(v -> {
+            String age = filterDialogBinding.etAge.getText().toString().trim();
+            String gender = filterDialogBinding.etGender.getText().toString().trim();
+            String startDate = filterDialogBinding.etStartDate.getText().toString().trim();
+            String endDate = filterDialogBinding.etEndDate.getText().toString().trim();
+            applyFilters(age, gender, startDate, endDate);
+            filterDialog.dismiss();
+        });
+
+        filterDialogBinding.btnResetFilter.setOnClickListener(v -> {
+            filterDialogBinding.etAge.setText("");
+            filterDialogBinding.etGender.setText("");
+            filterDialogBinding.etStartDate.setText("");
+            filterDialogBinding.etEndDate.setText("");
+            resetFilters();
+            filterDialog.dismiss();
+        });
+    }
+
+    private void showDatePicker(EditText editText) {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, year1, month1, dayOfMonth) -> {
+                    String selectedDate = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
+                    editText.setText(selectedDate);
+                }, year, month, day);
+        datePickerDialog.show();
+    }
+
+    private void applyFilters(String age, String gender, String startDate, String endDate) {
+        List<User> filteredList = new ArrayList<>();
+
+        for (User user : userAdapter.users) {
+            boolean matchesAge = age.isEmpty() || Float.parseFloat(user.getAge().substring(0, user.getAge().length()-7)) <= Float.parseFloat(age);
+            boolean matchesGender = gender.isEmpty() || user.getGender().substring(1, user.getGender().length()-1).equalsIgnoreCase(gender);
+            boolean matchesDOB = false;
+            Date userDob, start, end;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+            if (startDate.isEmpty() && endDate.isEmpty()) {
+                matchesDOB = true;
+            }
+            if (!startDate.isEmpty() && !endDate.isEmpty()) {
+                try {
+                    userDob = sdf.parse(user.getDob());
+                    start = sdf.parse(startDate);
+                    end = sdf.parse(endDate);
+                    if (userDob != null && start != null && end != null) {
+                        matchesDOB = userDob.after(start) && userDob.before(end);
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (!startDate.isEmpty() && endDate.isEmpty()) {
+                try {
+                    userDob = sdf.parse(user.getDob());
+                    start = sdf.parse(startDate);
+                    if (userDob != null && start != null) {
+                        matchesDOB = !userDob.before(start);
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (startDate.isEmpty() && !endDate.isEmpty()) {
+                try {
+                    userDob = sdf.parse(user.getDob());
+                    end = sdf.parse(endDate);
+                    if (userDob != null && end != null) {
+                        matchesDOB = !userDob.after(end);
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (matchesAge && matchesGender && matchesDOB) {
+                filteredList.add(user);
+            }
+        }
+        userAdapter.setUsers(filteredList);
+    }
+    private void resetFilters() {
+        userAdapter.setUsers(userAdapter.users);
     }
 }
