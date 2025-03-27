@@ -114,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
         blackColor = ColorStateList.valueOf(getResources().getColor(R.color.black, null));
         greyColor = ColorStateList.valueOf(getResources().getColor(R.color.grey, null));
         params = new WindowManager.LayoutParams();
-        gradientDrawable = octagonDrawable = applyFilterDrawable = resetFilterDrawable = new GradientDrawable();
+        gradientDrawable = octagonDrawable = new GradientDrawable();
+        applyFilterDrawable = new GradientDrawable();
+        resetFilterDrawable = new GradientDrawable();
         this.deleteUser = userViewModel.getDeleteUserDialog().getValue();
         if (deleteUser != null) {
             initializeDeleteDialog(deleteUser);
@@ -973,20 +975,15 @@ public class MainActivity extends AppCompatActivity {
             window.getAttributes().verticalMargin = 0.01F;
             window.setBackgroundDrawableResource(R.drawable.rounded_corner);
         }
-        //Below code Didn't work well with button.
-
-        /*applyFilterDrawable.setShape(GradientDrawable.RECTANGLE);
-        applyFilterDrawable.setTintList(greenColor);
-        applyFilterDrawable.setCornerRadius(20 * getResources().getDisplayMetrics().density);
-        applyFilterDrawable.setStroke(6, blueColor);
-        filterDialogBinding.btnApplyFilter.post(() -> {
-            filterDialogBinding.btnApplyFilter.setBackground(applyFilterDrawable);
-            filterDialogBinding.btnApplyFilter.invalidate();
-        });
+        //Below code Didn't work well with button so changed it to textview.
+        applyFilterDrawable.setColor(getColor(R.color.sky_blue));
+        applyFilterDrawable.setStroke(6, getColor(R.color.maroon));
+        applyFilterDrawable.setCornerRadius(27 * getResources().getDisplayMetrics().density);
+        filterDialogBinding.btnApplyFilter.setBackground(applyFilterDrawable);
         resetFilterDrawable.setColor(greyColor);
-        resetFilterDrawable.setCornerRadius(16 * getResources().getDisplayMetrics().density);
-        resetFilterDrawable.setStroke(2, blackColor);
-        filterDialogBinding.btnResetFilter.setBackground(resetFilterDrawable);*/
+        resetFilterDrawable.setCornerRadius(27 * getResources().getDisplayMetrics().density);
+        resetFilterDrawable.setStroke(6, blackColor);
+        filterDialogBinding.btnResetFilter.setBackground(resetFilterDrawable);
         filterDialog.show();
         filterDialogBinding.etStartDate.setOnClickListener(v -> showDatePicker(filterDialogBinding.etStartDate));
         filterDialogBinding.etEndDate.setOnClickListener(v -> showDatePicker(filterDialogBinding.etEndDate));
@@ -996,7 +993,11 @@ public class MainActivity extends AppCompatActivity {
             String gender = filterDialogBinding.etGender.getText().toString().trim();
             String startDate = filterDialogBinding.etStartDate.getText().toString().trim();
             String endDate = filterDialogBinding.etEndDate.getText().toString().trim();
-            applyFilters(age, gender, startDate, endDate);
+            try {
+                applyFilters(age, gender, startDate, endDate);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             filterDialog.dismiss();
         });
 
@@ -1023,51 +1024,35 @@ public class MainActivity extends AppCompatActivity {
         datePickerDialog.show();
     }
 
-    private void applyFilters(String age, String gender, String startDate, String endDate) {
+    private void applyFilters(String age, String gender, @NonNull String startDate, String endDate) throws ParseException {
         List<User> filteredList = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Date start, end;
+        start = end = null;
+        if (!startDate.isEmpty()) start = sdf.parse(startDate);
+        if (!endDate.isEmpty()) end = sdf.parse(endDate);
 
         for (User user : userAdapter.users) {
             boolean matchesAge = age.isEmpty() || Float.parseFloat(user.getAge().substring(0, user.getAge().length()-7)) <= Float.parseFloat(age);
             boolean matchesGender = gender.isEmpty() || user.getGender().substring(1, user.getGender().length()-1).equalsIgnoreCase(gender);
             boolean matchesDOB = false;
-            Date userDob, start, end;
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            Date userDob = sdf.parse(user.getDob());
 
             if (startDate.isEmpty() && endDate.isEmpty()) {
                 matchesDOB = true;
             }
             if (!startDate.isEmpty() && !endDate.isEmpty()) {
-                try {
-                    userDob = sdf.parse(user.getDob());
-                    start = sdf.parse(startDate);
-                    end = sdf.parse(endDate);
-                    if (userDob != null && start != null && end != null) {
-                        matchesDOB = userDob.after(start) && userDob.before(end);
-                    }
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                if (userDob != null && start != null && end != null)
+                    matchesDOB = userDob.after(start) && userDob.before(end);
             }
             if (!startDate.isEmpty() && endDate.isEmpty()) {
-                try {
-                    userDob = sdf.parse(user.getDob());
-                    start = sdf.parse(startDate);
-                    if (userDob != null && start != null) {
-                        matchesDOB = !userDob.before(start);
-                    }
-                } catch (ParseException e) {
-                    e.printStackTrace();
+                if (userDob != null && start != null) {
+                    matchesDOB = !userDob.before(start);
                 }
             }
             if (startDate.isEmpty() && !endDate.isEmpty()) {
-                try {
-                    userDob = sdf.parse(user.getDob());
-                    end = sdf.parse(endDate);
-                    if (userDob != null && end != null) {
-                        matchesDOB = !userDob.after(end);
-                    }
-                } catch (ParseException e) {
-                    e.printStackTrace();
+                if (userDob != null && end != null) {
+                    matchesDOB = !userDob.after(end);
                 }
             }
             if (matchesAge && matchesGender && matchesDOB) {

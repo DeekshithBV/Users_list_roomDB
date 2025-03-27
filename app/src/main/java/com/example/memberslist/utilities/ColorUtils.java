@@ -35,7 +35,7 @@ public class ColorUtils {
         colorMap.put(context.getColor(R.color.crimson_red), context.getString(R.string.color_crimson_red));
         colorMap.put(context.getColor(R.color.light_green), context.getString(R.string.color_light_green));
         colorMap.put(context.getColor(R.color.orange), context.getString(R.string.color_orange));
-        colorMap.put(context.getColor(R.color.meroon), context.getString(R.string.color_maroon));
+        colorMap.put(context.getColor(R.color.maroon), context.getString(R.string.color_maroon));
         colorMap.put(context.getColor(R.color.dark_green), context.getString(R.string.color_dark_green));
         colorMap.put(context.getColor(R.color.gold), context.getString(R.string.color_gold));
         colorMap.put(context.getColor(R.color.baby_pink), context.getString(R.string.color_baby_pink));
