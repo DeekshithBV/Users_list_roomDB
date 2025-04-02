@@ -503,7 +503,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             Date date = sdf.parse(dob);
             Calendar dobCalendar = Calendar.getInstance();
-            dobCalendar.setTime(date);
+            if (date != null)
+                dobCalendar.setTime(date);
 
             Calendar today = Calendar.getInstance();
             double age = today.get(Calendar.YEAR) - dobCalendar.get(Calendar.YEAR);
