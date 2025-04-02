@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
             addUserDetailsDialog.dismiss();
             photoUri = null;
             dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
-            userViewModel.favouriteColor.setValue(null);
+            userViewModel.favouriteColor.setValue(editUser == null ? getColor(R.color.dark_green) : Integer.parseInt(editUser.getFavouriteColor()));
         });
 
         // Handle DOB selection
@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
             photoUri = null;
             dialogAddUserBinding.textInputLayoutPhoneNo.setErrorEnabled(false);
             userAdapter.clearAll();
-            userViewModel.favouriteColor.setValue(null);
+            userViewModel.favouriteColor.setValue(editUser == null ? getColor(R.color.dark_green) : Integer.parseInt(editUser.getFavouriteColor()));
         });
 
         //Below code is for selection of users and checkbox.

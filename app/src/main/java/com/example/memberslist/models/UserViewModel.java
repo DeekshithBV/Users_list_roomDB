@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.memberslist.R;
 import com.example.memberslist.database.User;
 import com.example.memberslist.repository.UserRepository;
 
@@ -25,7 +26,7 @@ public class UserViewModel extends AndroidViewModel {
     public MutableLiveData<String> selectedUserCount = new MutableLiveData<>();
     public MutableLiveData<Boolean> deleteOrEditLayoutVisibility = new MutableLiveData<>(false);
     public MutableLiveData<Boolean> isAuthenticateSuccess = new MutableLiveData<>(false);
-    public MutableLiveData<Integer> favouriteColor = new MutableLiveData<>();
+    public MutableLiveData<Integer> favouriteColor = new MutableLiveData<>(getApplication().getColor(R.color.dark_green));
 
     public UserViewModel(@NonNull Application application) {
         super(application);
