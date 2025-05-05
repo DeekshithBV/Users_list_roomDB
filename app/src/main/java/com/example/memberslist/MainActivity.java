@@ -241,7 +241,6 @@ public class MainActivity extends AppCompatActivity {
         // Handle photo selection
         dialogAddUserBinding.buttonAddPhoto.setOnClickListener(v -> {
             requestCameraPermission();
-            openCamera();
         });
 
         // Add user
@@ -549,6 +548,8 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
         ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, CAMERA_REQUEST_CODE);
+        } else {
+            openCamera();
         }
     }
 
@@ -1064,5 +1065,25 @@ public class MainActivity extends AppCompatActivity {
     }
     private void resetFilters() {
         userAdapter.setUsers(userAdapter.users);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == CAMERA_REQUEST_CODE) {
+            boolean cameraGranted = false;
+            for (int i = 0; i < permissions.length; i++) {
+                if (permissions[i].equals(Manifest.permission.CAMERA)) {
+                    cameraGranted = (grantResults[i] == PackageManager.PERMISSION_GRANTED);
+                }
+            }
+            // Remove storageGranted check if targeting Android 10+
+            if (cameraGranted) {
+                openCamera();
+            } else {
+                Toast.makeText(this, "Permissions required to open camera", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
