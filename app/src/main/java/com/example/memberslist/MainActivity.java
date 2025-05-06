@@ -19,6 +19,7 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -882,6 +883,10 @@ public class MainActivity extends AppCompatActivity {
         colorsPalletDialogBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.colors_pallet_dialog, null, false);
         colorPickerDialog.setContentView(colorsPalletDialogBinding.getRoot());
 
+        int frameSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, getResources().getDisplayMetrics());
+        int colorSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics());
+        int tickMarkSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
+
         if (userViewModel.favouriteColor.getValue() == null)
             userViewModel.favouriteColor.setValue(editUser == null ? getColor(R.color.dark_green) : Integer.parseInt(editUser.getFavouriteColor()));
         final int[] selectedColor = {userViewModel.favouriteColor.getValue() != null ? userViewModel.favouriteColor.getValue() : getColor(R.color.dark_green)};
@@ -890,20 +895,20 @@ public class MainActivity extends AppCompatActivity {
 
         for (Map.Entry<Integer, String> color : colorMap.entrySet()) {
             FrameLayout frameLayout = new FrameLayout(this);
-            frameLayout.setLayoutParams(new ViewGroup.LayoutParams(140, 140));
+            frameLayout.setLayoutParams(new ViewGroup.LayoutParams(frameSize, frameSize));
             //frameLayout.setPadding(8,8,8,8); --> works but the size of colorView becomes small.
 
             FrameLayout colorContainer = new FrameLayout(this);
-            colorContainer.setLayoutParams(new ViewGroup.LayoutParams(120, 120));
+            colorContainer.setLayoutParams(new ViewGroup.LayoutParams(colorSize, colorSize));
 
             ImageView colorView = new ImageView(this), tickMark = new ImageView(this);
-            colorView.setLayoutParams(new ViewGroup.LayoutParams(120, 120));
+            colorView.setLayoutParams(new ViewGroup.LayoutParams(colorSize, colorSize));
             gradientDrawable = new GradientDrawable();
             gradientDrawable.setColor(color.getKey());
             gradientDrawable.setCornerRadius(4 * getResources().getDisplayMetrics().density);
             colorView.setBackground(gradientDrawable);
 
-            FrameLayout.LayoutParams tickMarkParams = new FrameLayout.LayoutParams(60, 60);
+            FrameLayout.LayoutParams tickMarkParams = new FrameLayout.LayoutParams(tickMarkSize, tickMarkSize);
             tickMarkParams.gravity = Gravity.CENTER;
             tickMark.setLayoutParams(tickMarkParams);
             tickMark.setImageResource(R.drawable.tick_mark_icon);
