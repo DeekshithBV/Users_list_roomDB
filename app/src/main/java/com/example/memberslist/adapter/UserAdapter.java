@@ -129,14 +129,21 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         } else {
             holder.photo.setImageResource(R.drawable.ic_launcher_foreground);
         }
+
         holder.deleteUser.setOnClickListener(v -> {
-            if (onDeleteClickListener != null) {
-                onDeleteClickListener.onDeleteClick(user);
-            }
+            if (isSelectionMode) holder.itemView.performClick();
+            else if (onDeleteClickListener != null) onDeleteClickListener.onDeleteClick(user);
         });
 
-        holder.photo.setOnClickListener(v -> showUserProfileDialog(user));
-        holder.user_details.setOnClickListener(v -> showUserDetailsLayout(user));
+        holder.photo.setOnClickListener(v -> {
+            if (isSelectionMode) holder.itemView.performClick();
+            else showUserProfileDialog(user);
+        });
+
+        holder.user_details.setOnClickListener(v -> {
+            if (isSelectionMode) holder.itemView.performClick();
+            else showUserDetailsLayout(user);
+        });
 
         //Below code is for selection of users and checkbox.
         holder.itemView.setBackgroundResource(selectedUsers.contains(user) ? R.drawable.selected_users_color : R.drawable.rounded_corner);
@@ -145,22 +152,33 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 isSelectionMode = true;
                 selectedUsers.add(user);
                 notifyDataSetChanged();
-            }
+            } else
+                toggleSelection(user);
             return true;
         });
 
         holder.itemView.setOnClickListener(v -> {
-            if (isSelectionMode) {
-                if (selectedUsers.contains(user)) {
-                    selectedUsers.remove(user);
-                    if (selectedUsers.isEmpty())
-                        isSelectionMode = false;
-                } else {
-                    selectedUsers.add(user);
-                }
-                notifyDataSetChanged();
-            }
+            if (isSelectionMode) toggleSelection(user);
         });
+
+        View.OnLongClickListener forwardLongClick = view -> {
+            holder.itemView.performLongClick();
+            return true;
+        };
+
+        holder.photo.setOnLongClickListener(forwardLongClick);
+        holder.deleteUser.setOnLongClickListener(forwardLongClick);
+        holder.user_details.setOnLongClickListener(forwardLongClick);
+
+        /*View.OnClickListener forwardClick = view -> {
+            holder.itemView.performClick();
+        };
+
+        if (isSelectionMode) {
+            holder.photo.setOnClickListener(forwardClick);
+            holder.deleteUser.setOnClickListener(forwardClick);
+            holder.user_details.setOnClickListener(forwardClick);
+        }*/
     }
 
     public List<User> getSelectedUsers() {
@@ -346,5 +364,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         Intent chooserIntent = Intent.createChooser(intentList.get(0), "Select Communication App");
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[0]));
         context.startActivity(chooserIntent);
+    }
+
+    private void toggleSelection(User user) {
+        if (selectedUsers.contains(user)) {
+            selectedUsers.remove(user);
+            if (selectedUsers.isEmpty())
+                isSelectionMode = false;
+        } else {
+            selectedUsers.add(user);
+        }
+        notifyDataSetChanged();
     }
 }
