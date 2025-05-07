@@ -64,7 +64,7 @@
     <string name="show_color">Show color</string>
     <string name="apply_filter">Apply Filter</string>
     <string name="reset_filter">Reset Filter</string>
-    <string name="start_date">Start Date(YY-MM-DD)</string>
-    <string name="end_date">End Date(YY-MM-DD)</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
     <string name="filter_users">Filter users</string>
 </resources>

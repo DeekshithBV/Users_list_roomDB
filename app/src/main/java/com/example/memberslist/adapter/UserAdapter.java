@@ -228,13 +228,15 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             return;
         }
 
-        if (user.getPhoneNumber().isEmpty()) userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.55F);
+        if (user.getPhoneNumber().isEmpty()) {
+            //userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.55F);
+        }
         else {
             userDetailsLayoutBinding.guideline3.setGuidelinePercent(0.33F);
             userDetailsLayoutBinding.guideline4.setGuidelinePercent(0.66F);
             gradientDrawable.setColor(context.getResources().getColor(R.color.sky_blue, null));
             gradientDrawable.setStroke(6, context.getColor(R.color.blue));
-            gradientDrawable.setCornerRadius(20 * displayMetrics.density);
+            gradientDrawable.setCornerRadius(27 * displayMetrics.density);
             userDetailsLayoutBinding.userPhoneVal.setBackground(gradientDrawable);
         }
         userDetailsLayoutBinding.userPhoneKey.setVisibility(user.getPhoneNumber().isEmpty() ? View.GONE : View.VISIBLE);
