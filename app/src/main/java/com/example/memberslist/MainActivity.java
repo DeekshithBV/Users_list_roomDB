@@ -1092,3 +1092,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+// to how git fetch works.
